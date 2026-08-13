@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-head">
+  <h1>{{ loc.name }}</h1>
+  <p>{{ loc.address }}, {{ loc.district }}, {{ loc.city }}</p>
+  <p class="muted">{{ loc.opening_hours }}{% if loc.phone %} · {{ loc.phone }}{% endif %}</p>
+  <div class="cta-row">
+    <a class="btn btn-gold" href="{{ loc.maps_directions_url }}" target="_blank" rel="noopener" data-track="get_directions">Chỉ đường</a>
+    <a class="btn btn-ghost" href="{% url 'locations:finder' %}">Điểm bán khác</a>
+  </div>
+</section>
+{% if nearby %}
+<section class="card">
+  <h2>Gần đó</h2>
+  <ul class="pos-list">
+    {% for n in nearby %}
+      <li><a href="{{ n.get_absolute_url }}"><strong>{{ n.name }}</strong></a><p>{{ n.address }}</p></li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+{% endblock %}

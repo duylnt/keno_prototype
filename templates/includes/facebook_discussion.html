@@ -1,0 +1,51 @@
+<section class="card fb-discussion">
+  <div class="card-head">
+    <h2>Thảo luận cộng đồng</h2>
+    <a class="text-link" href="{% url 'community:hub' %}">Cộng đồng</a>
+  </div>
+  {% if load_fb_sdk %}
+    <div id="fb-root"></div>
+    <script>
+      window.fbAsyncInit = function () {
+        FB.init({ appId: "{{ facebook_app_id|escapejs }}", xfbml: true, version: "v21.0" });
+      };
+      (function (d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) return;
+        js = d.createElement(s); js.id = id;
+        js.src = "https://connect.facebook.net/vi_VN/sdk.js";
+        fjs.parentNode.insertBefore(js, fjs);
+      }(document, "script", "facebook-jssdk"));
+    </script>
+  {% endif %}
+  {% if facebook_app_id and facebook_comments_url %}
+    <div class="fb-comments" data-href="{{ facebook_comments_url }}" data-width="100%" data-numposts="5" data-order-by="reverse_time"></div>
+  {% elif facebook_page_url %}
+    <div class="fb-page" data-href="{{ facebook_page_url }}" data-tabs="timeline" data-width="" data-height="420" data-small-header="true" data-adapt-container-width="true" data-hide-cover="false" data-show-facepile="false"></div>
+  {% else %}
+    <ul class="topic-list">
+      {% for post in discussion_posts %}
+        <li>
+          <span class="pill">{{ post.get_pillar_display }}</span>
+          <strong>{{ post.title }}</strong>
+          <small>{{ post.author_name }} · {{ post.comment_count }} trao đổi</small>
+        </li>
+      {% empty %}
+        {% for post in featured_posts %}
+          <li>
+            <span class="pill">{{ post.get_pillar_display }}</span>
+            <strong>{{ post.title }}</strong>
+            <small>{{ post.comment_count }} trao đổi</small>
+          </li>
+        {% empty %}
+          <li class="muted">Chưa có bài thảo luận.</li>
+        {% endfor %}
+      {% endfor %}
+    </ul>
+  {% endif %}
+  {% if facebook_open_url %}
+    <a class="btn btn-ghost btn-block" href="{{ facebook_open_url }}" target="_blank" rel="noopener" data-track="community_cta">Mở Facebook</a>
+  {% else %}
+    <a class="btn btn-ghost btn-block" href="{% url 'community:hub' %}" data-track="community_cta">Xem cộng đồng trên site</a>
+  {% endif %}
+</section>

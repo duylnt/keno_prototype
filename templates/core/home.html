@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block body_class %}page-home{% endblock %}
+
+{% block content %}
+<div class="home-hero">
+  <div class="home-hero-main">
+    {% include "includes/result_board.html" with heading="Kết quả Keno" %}
+    <div class="cta-row">
+      <a class="btn btn-gold" href="{% url 'core:live_results' %}">Trực tiếp kết quả</a>
+      <a class="btn btn-ghost" href="{% url 'results:simulator' %}">Chơi thử</a>
+      <a class="btn btn-ghost" href="{% url 'content:how_to_play' %}">Cách chơi</a>
+    </div>
+  </div>
+  <aside class="home-aside desktop-only">
+    <article class="kpi-card">
+      <span>Kỳ hôm nay</span>
+      <strong class="accent">{{ stats.today_count }}</strong>
+      <small>{{ stats.remaining_today }} kỳ còn lại / {{ stats.scheduled_today }} kỳ</small>
+    </article>
+    <article class="kpi-card">
+      <span>7 ngày qua</span>
+      <strong>{{ stats.week_count }}</strong>
+      <small>Kỳ đã mở thưởng</small>
+    </article>
+    <article class="kpi-card">
+      <span>Kỳ tiếp theo</span>
+      <strong class="accent" data-countdown>{{ countdown }}</strong>
+      <small>{% if next_draw %}{{ next_draw|date:"H:i · d/m" }}{% else %}Ngoài khung giờ{% endif %}</small>
+    </article>
+    <a class="btn btn-ghost btn-block" href="{% url 'results:stats' %}">Xem báo cáo đầy đủ</a>
+  </aside>
+</div>
+
+<section class="card home-define">
+  <h2>Keno là gì?</h2>
+  <p>Keno là sản phẩm xổ số nhanh: mỗi kỳ quay 20 số từ 01 đến 80, người chơi chọn 1–10 số (hoặc cửa Lớn/Nhỏ, Chẵn/Lẻ). Kỳ mở thưởng mỗi 8 phút, khung 06:00–21:52.</p>
+</section>
+
+<section class="stats-mobile mobile-only">
+  <div class="kpi-row">
+    <article class="kpi-card">
+      <span>Hôm nay</span>
+      <strong class="accent">{{ stats.today_count }}</strong>
+      <small>Còn {{ stats.remaining_today }} kỳ</small>
+    </article>
+    <article class="kpi-card">
+      <span>7 ngày</span>
+      <strong>{{ stats.week_count }}</strong>
+      <small>Kỳ đã quay</small>
+    </article>
+  </div>
+  <article class="card">
+    <div class="card-head">
+      <h2>Số nóng</h2>
+      <a class="text-link" href="{% url 'results:stats' %}">Chi tiết</a>
+    </div>
+    <ol class="heat-grid heat-grid-5">
+      {% for x in stats.hot|slice:":5" %}
+        <li>
+          <span class="heat-num">{{ x.number|stringformat:"02d" }}</span>
+          <small>{{ x.count }} lần</small>
+        </li>
+      {% endfor %}
+    </ol>
+  </article>
+</section>
+
+<section class="stats-desktop desktop-only">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">Báo cáo nhanh</p>
+      <h2>Thống kê {{ stats.sample_size }} kỳ gần nhất</h2>
+    </div>
+    <a class="text-link" href="{% url 'results:stats' %}">Mở trang thống kê →</a>
+  </div>
+  <div class="stats-charts">
+    <article class="card chart-card">
+      <h3>Lớn / Nhỏ</h3>
+      <div class="chart-frame">
+        <canvas id="homeSizeChart"></canvas>
+      </div>
+      <p class="muted">Nhỏ {{ stats.series.size_counts.small }} · Lớn {{ stats.series.size_counts.big }}</p>
+    </article>
+    <article class="card chart-card">
+      <h3>Chẵn / Lẻ</h3>
+      <div class="chart-frame">
+        <canvas id="homeParityChart"></canvas>
+      </div>
+      <p class="muted">Chẵn {{ stats.series.parity_counts.even }} · Lẻ {{ stats.series.parity_counts.odd }} · Hòa {{ stats.series.parity_counts.draw }}</p>
+    </article>
+    <article class="card chart-card chart-card-wide">
+      <h3>Tổng 20 số · 24 kỳ</h3>
+      <div class="chart-frame chart-frame-line">
+        <canvas id="homeSparkChart"></canvas>
+      </div>
+      <p class="muted">Ngưỡng Lớn/Nhỏ: 811</p>
+    </article>
+  </div>
+  <div class="stats-ranks">
+    <article class="card">
+      <h3>Số nóng</h3>
+      <ol class="heat-grid">
+        {% for x in stats.hot %}
+          <li>
+            <span class="heat-num">{{ x.number|stringformat:"02d" }}</span>
+            <small>{{ x.count }}</small>
+          </li>
+        {% endfor %}
+      </ol>
+    </article>
+    <article class="card">
+      <h3>Số lạnh</h3>
+      <ol class="heat-grid is-cold">
+        {% for x in stats.cold %}
+          <li>
+            <span class="heat-num">{{ x.number|stringformat:"02d" }}</span>
+            <small>{{ x.count }}</small>
+          </li>
+        {% endfor %}
+      </ol>
+    </article>
+  </div>
+</section>
+
+<section class="home-utils grid-2">
+  <article class="card">
+    <h2>5 tiện ích chính</h2>
+    <ul class="feature-list">
+      <li><a href="{% url 'results:live' %}">Live Result</a> — kết quả theo nhịp 8 phút</li>
+      <li><a href="{% url 'core:live_results' %}">Trực tiếp kết quả</a> — xem quay số trực tiếp</li>
+      <li><a href="{% url 'results:stats' %}">Thống kê</a> tần suất, Lớn/Nhỏ, Chẵn/Lẻ</li>
+      <li><a href="{% url 'results:check_ticket' %}">Dò vé</a> theo dãy số</li>
+      <li><a href="{% url 'locations:finder' %}">Tìm điểm bán gần nhất</a></li>
+    </ul>
+  </article>
+  {% include "includes/community_widget.html" %}
+</section>
+
+<div class="home-audiences grid-2">
+  <section class="card">
+    <div class="card-head">
+      <h2>Dành cho người mới</h2>
+      <a class="text-link" href="{% url 'content:article_list' %}">Khám phá Keno</a>
+    </div>
+    <div class="cta-row wrap">
+      <a class="chip-link" href="{% url 'content:how_to_play' %}">Xem cách chơi</a>
+      <a class="chip-link" href="{% url 'results:simulator' %}">Chơi thử</a>
+      <a class="chip-link" href="{% url 'results:live' %}">Xem kết quả</a>
+      <a class="chip-link" href="{% url 'community:hub' %}">Tham gia cộng đồng</a>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-head">
+      <h2>Người chơi hiện hữu</h2>
+    </div>
+    <div class="cta-row wrap">
+      <a class="chip-link" href="{% url 'results:stats' %}">Xem thống kê</a>
+      <a class="chip-link" href="{% url 'results:check_ticket' %}">Dò vé</a>
+      <a class="chip-link" href="{% url 'results:today' %}">Kỳ trong ngày</a>
+      <a class="chip-link" href="{% url 'core:live_results' %}">Trực tiếp kết quả</a>
+      <a class="chip-link" href="{% url 'community:hub' %}">Thảo luận</a>
+    </div>
+  </section>
+</div>
+
+{% if articles %}
+<section class="home-articles">
+  <div class="section-head">
+    <h2>Bài viết nền tảng</h2>
+    <a class="text-link" href="{% url 'content:article_list' %}">Tất cả</a>
+  </div>
+  <div class="article-grid">
+    {% for a in articles %}
+      <a class="article-card" href="{{ a.get_absolute_url }}">
+        <span class="pill">{{ a.category.name }}</span>
+        <h3>{{ a.title }}</h3>
+        <p>{{ a.excerpt }}</p>
+      </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<script id="keno-home-stats" type="application/json">{{ home_stats_json|safe }}</script>
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="keno-dash">
+  {% include "admin/reports/_chrome.html" %}
+
+  <section class="keno-kpis">
+    <article class="keno-kpi">
+      <span>Lưu lượng organic</span>
+      <strong>{{ website_kpis.organic_traffic }}</strong>
+      <em>GA4</em>
+    </article>
+    <article class="keno-kpi">
+      <span>Tăng trưởng hữu cơ</span>
+      <strong>{% if website_kpis.has_organic_growth %}{{ website_kpis.organic_growth }}%{% else %}—{% endif %}</strong>
+      <em>
+        {% if not website_kpis.has_organic_growth %}
+          <span class="keno-pill warn">Chưa đủ dữ liệu kỳ trước</span>
+        {% elif website_kpis.organic_growth_ok %}
+          <span class="keno-pill ok">Đạt mục tiêu ≥15–20%</span>
+        {% else %}
+          <span class="keno-pill warn">Mục tiêu ≥15–20%/kỳ</span>
+        {% endif %}
+      </em>
+    </article>
+    <article class="keno-kpi">
+      <span>Từ khóa Top 10</span>
+      <strong>{{ website_kpis.keyword_top10 }}</strong>
+      <em>Search Console</em>
+    </article>
+    <article class="keno-kpi">
+      <span>Người dùng xem kết quả</span>
+      <strong>{{ website_kpis.result_check_users }}</strong>
+      <em>Kích hoạt</em>
+    </article>
+    <article class="keno-kpi">
+      <span>Returning users</span>
+      <strong>{{ website_kpis.returning_pct }}%</strong>
+      <em>D7 {{ website_kpis.d7 }}% · D30 {{ website_kpis.d30 }}%</em>
+    </article>
+    <article class="keno-kpi">
+      <span>Find POS CTR</span>
+      <strong>{{ website_kpis.find_pos_ctr }}%</strong>
+      <em>Location {{ website_kpis.loc_perm_rate }}% · Chỉ đường {{ website_kpis.directions_ctr }}%</em>
+    </article>
+  </section>
+
+  {{ ga4_series|json_script:"keno-ga4-series" }}
+  {{ event_bars|json_script:"keno-event-bars" }}
+
+  <div class="keno-charts">
+    <div class="keno-chart-box">
+      <h3>Traffic GA4</h3>
+      <canvas id="keno-ga4-chart" height="220"></canvas>
+    </div>
+    <div class="keno-chart-box">
+      <h3>Kích hoạt &amp; gắn kết</h3>
+      <canvas id="keno-events-chart" height="220"></canvas>
+    </div>
+  </div>
+
+  <div class="keno-grid-2">
+    <section class="keno-card">
+      <h3>Tiếp cận</h3>
+      <div class="keno-metrics">
+        <div>Organic traffic: <b>{{ ga4_totals.organic }}</b></div>
+        <div>Người dùng mới: <b>{{ ga4_totals.new_users }}</b></div>
+        <div>Phiên referral: <b>{{ ga4_totals.referral }}</b></div>
+        <div>Tổng phiên: <b>{{ ga4_totals.sessions }}</b></div>
+      </div>
+    </section>
+    <section class="keno-card">
+      <h3>Gắn kết</h3>
+      <div class="keno-metrics">
+        <div>Result check users: <b>{{ website_kpis.result_check_users }}</b></div>
+        <div>Phiên / người dùng: <b>{{ ga4_totals.sessions_per_user }}</b></div>
+        <div>Trang / phiên: <b>{{ ga4_totals.pages_per_session }}</b></div>
+        <div>Bài SEO xuất bản trong kỳ: <b>{{ website_kpis.articles_published }}</b></div>
+      </div>
+    </section>
+  </div>
+
+  <section class="keno-card">
+    <h3>Kỹ thuật</h3>
+    <div class="keno-metrics">
+      <div>
+        Điểm hiệu suất mobile:
+        <b>{{ technical.mobile_perf_score }}</b>
+        {% if technical.mobile_ok %}<span class="keno-pill ok">Đạt &gt; 90</span>{% else %}<span class="keno-pill warn">Mục tiêu &gt; 90</span>{% endif %}
+      </div>
+      <div>LCP: <b>{{ technical.lcp_ms }} ms</b></div>
+      <div>INP: <b>{{ technical.inp_ms }} ms</b></div>
+      <div>CLS: <b>{{ technical.cls }}</b></div>
+      <div>
+        Core Web Vitals:
+        {% if technical.cwv_pass %}<span class="keno-pill ok">Đạt chuẩn</span>{% else %}<span class="keno-pill warn">Chưa đạt</span>{% endif %}
+      </div>
+      <div>
+        Độ trễ realtime:
+        <b>{{ technical.realtime_latency_ms }} ms</b>
+        {% if technical.latency_ok %}<span class="keno-pill ok">&lt; 3 giây</span>{% else %}<span class="keno-pill warn">Mục tiêu &lt; 3s</span>{% endif %}
+      </div>
+    </div>
+  </section>
+
+  <section class="keno-card">
+    <h3>Ý định offline</h3>
+    <div class="keno-metrics">
+      <div>Find POS CTR: <b>{{ website_kpis.find_pos_ctr }}%</b></div>
+      <div>Location permission rate: <b>{{ website_kpis.loc_perm_rate }}%</b></div>
+      <div>Get Directions CTR: <b>{{ website_kpis.directions_ctr }}%</b></div>
+    </div>
+  </section>
+</div>
+{% endblock %}

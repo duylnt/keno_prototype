@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-head">
+  <h1>Chơi thử Keno</h1>
+</section>
+<section class="card">
+  <p>Chọn 1–10 số, rồi quay thử một kỳ mô phỏng.</p>
+  <div class="picker" id="picker"></div>
+  <div class="cta-row">
+    <button class="btn btn-ghost" type="button" id="quick-pick">Chọn ngẫu nhiên</button>
+    <button class="btn btn-gold" type="button" id="play-sim">Quay thử</button>
+  </div>
+  <p class="muted" id="pick-count">Đã chọn 0 số</p>
+</section>
+<section class="card" id="sim-result" hidden>
+  <h2>Kết quả mô phỏng</h2>
+  <ol class="balls" id="sim-balls"></ol>
+  <p id="sim-summary"></p>
+</section>
+{% endblock %}

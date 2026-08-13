@@ -1,0 +1,53 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="keno-dash">
+  {% include "admin/reports/_chrome.html" %}
+
+  <section class="keno-kpis">
+    <article class="keno-kpi">
+      <span>Thành viên mới</span>
+      <strong>{{ community_kpis.new_members }}</strong>
+    </article>
+    <article class="keno-kpi">
+      <span>Tài khoản xác thực</span>
+      <strong>{{ community_kpis.authentic_rate }}%</strong>
+      <em>
+        {% if community_kpis.authentic_rate >= community_kpis.authentic_target %}
+          <span class="keno-pill ok">Mục tiêu &gt; 90%</span>
+        {% else %}
+          <span class="keno-pill warn">Mục tiêu &gt; 90%</span>
+        {% endif %}
+      </em>
+    </article>
+    <article class="keno-kpi">
+      <span>Bài đã duyệt / ngày</span>
+      <strong>{{ community_kpis.approved_per_day }}</strong>
+      <em>{{ community_kpis.approved }} bài trong kỳ · {{ community_kpis.pending }} chờ duyệt</em>
+    </article>
+    <article class="keno-kpi">
+      <span>Bình luận TB / chủ đề</span>
+      <strong>{{ community_kpis.avg_comments }}</strong>
+    </article>
+    <article class="keno-kpi">
+      <span>Thành viên quay lại</span>
+      <strong>{{ community_kpis.returning_active_pct }}%</strong>
+    </article>
+    <article class="keno-kpi">
+      <span>Minigame / hoạt động</span>
+      <strong>{{ community_kpis.minigame_participants }}</strong>
+      <em>{{ community_kpis.minigame_events }} hoạt động trong kỳ</em>
+    </article>
+  </section>
+
+  <section class="keno-card">
+    <h3>Chất lượng</h3>
+    <div class="keno-metrics">
+      <div>Tỷ lệ xóa bài rác: <b>{{ community_kpis.spam_removal_rate }}%</b></div>
+      <div>Xóa bán số / môi giới: <b>{{ community_kpis.scam_removed }}</b></div>
+      <div>SLA kiểm duyệt: <b>{{ community_kpis.moderation_sla_hours }} giờ</b></div>
+      <div>Từ chối trong kỳ: <b>{{ community_kpis.rejected }}</b></div>
+    </div>
+  </section>
+</div>
+{% endblock %}

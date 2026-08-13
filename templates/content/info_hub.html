@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block body_class %}page-info{% endblock %}
+{% block content %}
+<section class="page-head">
+  <p class="eyebrow">Thông tin</p>
+  <h1>Hướng dẫn &amp; bài viết Keno</h1>
+  <p class="lede muted">Cách chơi, chơi thử, trách nhiệm, nội quy cộng đồng và các bài viết đã xuất bản.</p>
+</section>
+
+<div class="info-hub-grid">
+  {% for card in hub_cards %}
+    <a class="info-hub-card" href="{{ card.href }}">
+      <span class="pill">{{ card.kicker }}</span>
+      <h2>{{ card.title }}</h2>
+      <p>{{ card.desc }}</p>
+      <span class="info-hub-go">Xem →</span>
+    </a>
+  {% endfor %}
+</div>
+
+<section class="info-hub-articles">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">CMS</p>
+      <h2>Các bài viết khác</h2>
+    </div>
+    <a class="text-link" href="{% url 'content:article_list' %}">Tất cả bài viết →</a>
+  </div>
+  <div class="article-grid">
+    {% for a in articles %}
+      <a class="article-card" href="{{ a.get_absolute_url }}">
+        {% if a.cover %}
+          <img class="article-thumb" src="{{ a.cover.url }}" alt="{{ a.cover_alt|default:a.title }}" width="400" height="220" loading="lazy">
+        {% endif %}
+        <span class="pill">{{ a.category.name }}</span>
+        <h3>{{ a.title }}</h3>
+        <p>{{ a.excerpt }}</p>
+      </a>
+    {% empty %}
+      <p class="muted">Chưa có bài viết. <a href="{% url 'content:article_list' %}">Xem trang bài viết</a>.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,95 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="keno-dash">
+  <div>
+    <h2>{{ title }}</h2>
+  </div>
+  <nav class="keno-tabs" aria-label="Công cụ SEO">
+    {% for p in seo_nav %}
+      <a href="{% url p.url_name %}" class="{% if p.key == seo_key %}is-active{% endif %}">{{ p.title }}</a>
+    {% endfor %}
+  </nav>
+
+  <section class="keno-kpis">
+    <article class="keno-kpi">
+      <span>Bài index</span>
+      <strong>{{ overview.articles_indexed }}</strong>
+      <em>{{ overview.articles_published }} xuất bản · {{ overview.articles_draft }} nháp</em>
+    </article>
+    <article class="keno-kpi">
+      <span>noindex / ẩn</span>
+      <strong>{{ overview.articles_noindex }}</strong>
+      <em>Không đưa vào sitemap</em>
+    </article>
+    <article class="keno-kpi">
+      <span>Redirect đang dùng</span>
+      <strong>{{ overview.redirects }}</strong>
+      <em><a href="{% url 'admin:seo_seoredirect_changelist' %}">Quản lý 301</a></em>
+    </article>
+    <article class="keno-kpi">
+      <span>Link hỏng</span>
+      <strong>{{ overview.broken_links }}</strong>
+      <em>{% if overview.linkcheck_at %}{{ overview.linkcheck_at|date:"d/m H:i" }}{% else %}chưa chạy{% endif %}</em>
+    </article>
+  </section>
+
+  <div class="keno-grid-2">
+    <section class="keno-card">
+      <h3>Sitemap &amp; thu thập</h3>
+      <div class="keno-metrics">
+        <div>Sitemap index<br><b><a href="/sitemap.xml" target="_blank" rel="noopener">/sitemap.xml</a></b></div>
+        <div>Lần tạo gần nhất<br><b>{% if overview.sitemap_generated_at %}{{ overview.sitemap_generated_at|date:"d/m/Y H:i" }}{% else %}chưa gọi{% endif %}</b></div>
+        <div>llms.txt<br><b><a href="/llms.txt" target="_blank" rel="noopener">/llms.txt</a></b></div>
+        <div>robots.txt<br><b><a href="/robots.txt" target="_blank" rel="noopener">/robots.txt</a></b></div>
+      </div>
+    </section>
+    <section class="keno-card">
+      <h3>GA4 / GTM / Search Console</h3>
+      <div class="keno-metrics">
+        <div>GA4 Measurement ID<br><b>{{ overview.ga4_id }}</b></div>
+        <div>GTM Container<br><b>{{ overview.gtm_id }}</b></div>
+        <div>GSC property<br><b>{{ overview.gsc_site }}</b></div>
+        <div>SITE_URL<br><b>{{ overview.site_url }}</b></div>
+      </div>
+    </section>
+  </div>
+
+  <section class="keno-card">
+    <h3>Kiểm tra link nội bộ</h3>
+    <p class="keno-note">{% if overview.linkcheck_at %}{{ overview.linkcheck_ok }} ổn / {{ overview.linkcheck_broken }} hỏng{% else %}Chưa chạy{% endif %}</p>
+    <form method="post" class="keno-actions">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="linkcheck">
+      <button type="submit" class="keno-btn keno-btn-primary">Chạy kiểm tra</button>
+      <a class="keno-btn" href="{% url 'admin:seo_brokenlink_changelist' %}">Xem danh sách</a>
+    </form>
+  </section>
+
+  <section class="keno-card">
+    <h3>Core Web Vitals</h3>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="cwv">
+      <div class="keno-metrics">
+        <label>LCP<br><input name="lcp_note" value="{{ overview.cwv.lcp_note }}" placeholder="vd. 2.1s mobile (đo tay)"></label>
+        <label>INP<br><input name="inp_note" value="{{ overview.cwv.inp_note }}" placeholder="vd. ổn / cần giảm JS"></label>
+        <label>CLS<br><input name="cls_note" value="{{ overview.cwv.cls_note }}" placeholder="vd. ảnh bìa đã set kích thước"></label>
+      </div>
+      <p><textarea name="cwv_notes" rows="5" style="width:100%;margin-top:8px">{{ overview.cwv.notes }}</textarea></p>
+      <button type="submit" class="keno-btn">Lưu ghi chú</button>
+    </form>
+  </section>
+
+  {% if gaps %}
+  <section class="keno-card">
+    <h3>Gap nội dung (rút từ nghiên cứu URL)</h3>
+    <ul>
+      {% for g in gaps %}
+        <li>{{ g.topic }} — <a href="{% url 'admin:seo_writer' %}?topic={{ g.topic|urlencode }}">Viết nháp</a></li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

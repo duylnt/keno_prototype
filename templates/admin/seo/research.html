@@ -1,0 +1,93 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="keno-dash">
+  <div>
+    <h2>{{ title }}</h2>
+  </div>
+  <nav class="keno-tabs" aria-label="Công cụ SEO">
+    {% for p in seo_nav %}
+      <a href="{% url p.url_name %}" class="{% if p.key == seo_key %}is-active{% endif %}">{{ p.title }}</a>
+    {% endfor %}
+  </nav>
+
+  <section class="keno-card">
+    <h3>Phân tích URL</h3>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="fetch">
+      <p>
+        <label>Sản phẩm
+          <select name="product_hint">
+            <option value="">Tự nhận diện</option>
+            <option value="keno">Keno</option>
+            <option value="power655">Power 6/55</option>
+            <option value="mega645">Mega 6/45</option>
+            <option value="max3d">Max 3D</option>
+            <option value="lotto535">Lotto 5/35</option>
+            <option value="other">Khác</option>
+          </select>
+        </label>
+      </p>
+      <p>
+        <label>URL (mỗi dòng một link)
+          <textarea name="urls" rows="6" style="width:100%" placeholder="{{ seed_hint }}"></textarea>
+        </label>
+      </p>
+      <div class="keno-actions">
+        <button type="submit" class="keno-btn keno-btn-primary">Phân tích URL</button>
+      </div>
+    </form>
+    <form method="post" class="keno-actions" style="margin-top:8px">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="samples">
+      <button type="submit" class="keno-btn">Nạp URL mẫu</button>
+    </form>
+  </section>
+
+  <section class="keno-card">
+    <h3>Nội dung thị trường</h3>
+    {% if gaps %}
+    <table class="keno-table">
+      <thead>
+        <tr><th>Chủ đề / gap</th><th>Sản phẩm</th><th>Từ khóa thiếu</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for g in gaps %}
+          <tr>
+            <td>{{ g.topic }}{% if g.source %}<br><span class="keno-note">{{ g.source.url }}</span>{% endif %}</td>
+            <td>{{ g.product }}</td>
+            <td>{{ g.missing_keywords|join:", " }}</td>
+            <td><a href="{% url 'admin:seo_writer' %}?topic={{ g.topic|urlencode }}">Viết từ gap</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <p class="keno-note">Chưa có dữ liệu</p>
+    {% endif %}
+  </section>
+
+  <section class="keno-card">
+    <h3>Kết quả đã lưu</h3>
+    <table class="keno-table">
+      <thead>
+        <tr><th>Tiêu đề</th><th>SP</th><th>Từ</th><th>Schema</th><th>TT</th></tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+          <tr>
+            <td><a href="{{ row.url }}" rel="noopener nofollow" target="_blank">{{ row.title|default:row.url }}</a><br><span class="keno-note">{{ row.excerpt|truncatechars:140 }}</span></td>
+            <td>{{ row.get_product_hint_display }}</td>
+            <td>{{ row.word_count }}</td>
+            <td>{{ row.schema_types }}</td>
+            <td>{{ row.get_status_display }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5">Chưa có URL.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+</div>
+{% endblock %}

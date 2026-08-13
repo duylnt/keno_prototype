@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-head">
+  <h1>Không tìm thấy trang</h1>
+  <p class="muted">Đường dẫn không tồn tại hoặc đã được chuyển. Bạn có thể tiếp tục từ các trang chính:</p>
+  <div class="cta-row wrap">
+    <a class="btn btn-gold" href="{% url 'core:home' %}">Trang chủ</a>
+    <a class="btn btn-ghost" href="{% url 'results:live' %}">Kết quả Keno</a>
+    <a class="btn btn-ghost" href="{% url 'content:info_hub' %}">Thông tin</a>
+    <a class="btn btn-ghost" href="{% url 'content:how_to_play' %}">Cách chơi</a>
+    <a class="btn btn-ghost" href="{% url 'content:article_list' %}">Bài viết</a>
+    <a class="btn btn-ghost" href="{% url 'locations:finder' %}">Điểm bán</a>
+  </div>
+</section>
+{% endblock %}

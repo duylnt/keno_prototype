@@ -1,0 +1,66 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="keno-dash">
+  {% include "admin/reports/_chrome.html" %}
+
+  <section class="keno-kpis">
+    <article class="keno-kpi">
+      <span>Impressions</span>
+      <strong>{{ gsc_totals.impressions }}</strong>
+      <em>Nhận biết trên công cụ tìm kiếm</em>
+    </article>
+    <article class="keno-kpi">
+      <span>Clicks</span>
+      <strong>{{ gsc_totals.clicks }}</strong>
+      <em>CTR {{ gsc_totals.ctr }}%</em>
+    </article>
+    <article class="keno-kpi">
+      <span>Vị trí trung bình</span>
+      <strong>{{ gsc_totals.position }}</strong>
+      <em>Search Console</em>
+    </article>
+    <article class="keno-kpi">
+      <span>Từ khóa Top 10</span>
+      <strong>{{ website_kpis.keyword_top10 }}</strong>
+      <em>Priority Keyword Rankings</em>
+    </article>
+  </section>
+
+  {{ gsc_series|json_script:"keno-gsc-series" }}
+  <div class="keno-chart-box">
+    <h3>Impressions &amp; clicks</h3>
+    <canvas id="keno-gsc-chart" height="220"></canvas>
+  </div>
+
+  <section class="keno-card">
+    <h3>Thứ hạng từ khóa ưu tiên</h3>
+    {% if top_queries %}
+    <table class="keno-table">
+      <thead>
+        <tr>
+          <th>Từ khóa</th>
+          <th>Clicks</th>
+          <th>Impressions</th>
+          <th>CTR</th>
+          <th>Vị trí TB</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for q in top_queries %}
+          <tr>
+            <td>{{ q.query }}</td>
+            <td>{{ q.clicks }}</td>
+            <td>{{ q.impressions }}</td>
+            <td>{{ q.ctr }}%</td>
+            <td>{{ q.position }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <p class="keno-note">Chưa có dữ liệu</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

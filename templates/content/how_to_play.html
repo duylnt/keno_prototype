@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-head">
+  <h1>Cách chơi Keno</h1>
+</section>
+<article class="card prose">
+  <h2>Các bước chơi</h2>
+  <ol class="howto-steps">
+    {% for step in howto_steps %}
+      <li>
+        <strong>{{ step.name }}.</strong>
+        {{ step.text }}
+      </li>
+    {% endfor %}
+  </ol>
+  {% if page %}{{ page.body|safe }}{% elif article %}{{ article.body|safe }}{% endif %}
+  <div class="cta-row">
+    <a class="btn btn-gold" href="{% url 'results:simulator' %}">Chơi thử</a>
+    <a class="btn btn-ghost" href="{% url 'locations:finder' %}">Tìm điểm bán</a>
+    <a class="btn btn-ghost" href="{% url 'results:check_ticket' %}">Dò vé</a>
+  </div>
+</article>
+{% if faq_items %}
+<section class="card faq-block">
+  <h2>Câu hỏi thường gặp</h2>
+  <dl class="faq-list">
+    {% for f in faq_items %}
+      <dt>{{ f.q }}</dt>
+      <dd>{{ f.a }}</dd>
+    {% endfor %}
+  </dl>
+</section>
+{% endif %}
+{% endblock %}

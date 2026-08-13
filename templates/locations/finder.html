@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+{% endblock %}
+{% block content %}
+<section class="page-head">
+  <h1>Tìm điểm bán gần bạn</h1>
+  <p class="flash" id="geo-fallback" hidden>Không lấy được vị trí. Hãy chọn thành phố bên dưới hoặc tìm trên bản đồ.</p>
+  <div class="cta-row">
+    <button class="btn btn-gold" type="button" id="use-geo"{% if auto_gps %} data-auto-gps="1"{% endif %}>Dùng vị trí của tôi</button>
+    <a class="btn btn-ghost" href="{% url 'locations:voucher' %}">Nhận mã trải nghiệm</a>
+  </div>
+</section>
+<div class="split-layout finder-layout">
+  <div id="map" class="map"></div>
+  <div>
+    <div class="filter">
+      <label>Thành phố
+        <select id="city-filter">
+          <option value="">Tất cả</option>
+          {% for c in cities %}<option>{{ c }}</option>{% endfor %}
+        </select>
+      </label>
+    </div>
+    <ul class="pos-list" id="pos-list">
+      {% for loc in locations %}
+        <li data-city="{{ loc.city }}" data-id="{{ loc.id }}">
+          <a href="{{ loc.get_absolute_url }}"><strong>{{ loc.name }}</strong></a>
+          <p>{{ loc.address }}, {{ loc.district }}, {{ loc.city }}</p>
+          <p class="muted">{{ loc.opening_hours }}{% if loc.phone %} · {{ loc.phone }}{% endif %}</p>
+          <a class="text-link" href="{{ loc.maps_directions_url }}" target="_blank" rel="noopener" data-track="get_directions">Chỉ đường</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+<script id="keno-pos" type="application/json">{{ locations_json|safe }}</script>
+{% endblock %}

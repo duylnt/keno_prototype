@@ -1,0 +1,19 @@
+<aside class="card community-widget">
+  <div class="card-head">
+    <h2>Cộng đồng Keno</h2>
+    <a class="text-link" href="{% url 'community:hub' %}">Xem tất cả</a>
+  </div>
+  <p class="muted">{{ site_settings.facebook_group_name }}</p>
+  <ul class="topic-list">
+    {% for post in featured_posts %}
+      <li>
+        <span class="pill">{{ post.get_pillar_display }}</span>
+        <strong>{{ post.title }}</strong>
+        <small>{{ post.comment_count }} trao đổi</small>
+      </li>
+    {% empty %}
+      <li>Chưa có chủ đề nổi bật.</li>
+    {% endfor %}
+  </ul>
+  <a class="btn btn-gold" href="{% url 'community:join' %}" data-track="community_cta">{{ site_settings.community_cta_label }}</a>
+</aside>

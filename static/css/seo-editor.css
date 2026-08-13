@@ -1,0 +1,42 @@
+.keno-seo-panel { max-width: 520px; }
+.keno-seo-label {
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #71717a;
+  margin: 8px 0 6px;
+}
+.keno-serp {
+  border: 1px solid #e4e4e7;
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: #fff;
+}
+.keno-serp-url { color: #202124; font-size: 12px; }
+.keno-serp-title { color: #1a0dab; font-size: 18px; line-height: 1.3; margin: 4px 0; }
+.keno-serp-desc { color: #4d5156; font-size: 13px; line-height: 1.4; }
+.keno-seo-checks { list-style: none; padding: 0; margin: 0; }
+.keno-seo-checks li {
+  font-size: 13px;
+  padding: 4px 0;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.keno-seo-checks li span {
+  width: 18px;
+  text-align: center;
+  font-weight: 700;
+}
+.keno-seo-checks li.ok { color: #15803d; }
+.keno-seo-checks li.warn { color: #b45309; }
+.keno-seo-checks em { color: #71717a; font-style: normal; font-size: 12px; }
+.keno-char-count {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 12px;
+  color: #71717a;
+}
+.keno-char-count.is-warn { color: #b45309; }
+.keno-char-count.is-bad { color: #b91c1c; font-weight: 650; }

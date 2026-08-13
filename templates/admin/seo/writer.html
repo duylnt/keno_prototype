@@ -1,0 +1,82 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="keno-dash">
+  <div>
+    <h2>{{ title }}</h2>
+  </div>
+  <nav class="keno-tabs" aria-label="Công cụ SEO">
+    {% for p in seo_nav %}
+      <a href="{% url p.url_name %}" class="{% if p.key == seo_key %}is-active{% endif %}">{{ p.title }}</a>
+    {% endfor %}
+  </nav>
+
+  {% if not api_configured %}
+    <p class="keno-pill warn">Chưa có API key — đang dùng dàn bài mẫu.</p>
+  {% else %}
+    <p class="keno-pill ok">API đã cấu hình. Bài sinh ra vẫn là nháp.</p>
+  {% endif %}
+
+  <section class="keno-card">
+    <form method="post">
+      {% csrf_token %}
+      <p>
+        <label>Chủ đề / truy vấn
+          <input name="topic" value="{{ topic }}" required style="width:100%" placeholder="Ví dụ: Cách đọc thống kê Lớn Nhỏ Keno">
+        </label>
+      </p>
+      <p>
+        <label>Nhóm bài
+          <select name="category">
+            {% for c in categories %}
+              <option value="{{ c.pk }}" {% if selected_category == c.pk|stringformat:'s' %}selected{% endif %}>{{ c.name }}</option>
+            {% endfor %}
+          </select>
+        </label>
+      </p>
+      <p>
+        <label>Dàn ý H2 (không bắt buộc)
+          <textarea name="outline" rows="4" style="width:100%">{{ outline }}</textarea>
+        </label>
+      </p>
+      <p>
+        <label>Gợi ý từ crawler
+          <textarea name="research_notes" rows="3" style="width:100%">{{ research_notes }}</textarea>
+        </label>
+      </p>
+      <div class="keno-actions">
+        <button type="submit" name="preview" value="1" class="keno-btn">Xem trước</button>
+        <button type="submit" name="save" value="1" class="keno-btn keno-btn-primary">Lưu bản nháp</button>
+      </div>
+    </form>
+  </section>
+
+  {% if draft %}
+  <section class="keno-card">
+    <h3>Xem trước — nguồn: {{ draft.source }}</h3>
+    {% if draft.api_error %}<p class="keno-note">API lỗi: {{ draft.api_error }}</p>{% endif %}
+    <p><b>SEO title:</b> {{ draft.seo_title }} ({{ draft.seo_title|length }} ký tự)</p>
+    <p><b>Meta:</b> {{ draft.seo_description }} ({{ draft.seo_description|length }})</p>
+    <p><b>Slug:</b> {{ draft.slug }} · <b>Từ khóa:</b> {{ draft.focus_keyword }}</p>
+    <p><b>Tóm tắt:</b> {{ draft.excerpt }}</p>
+    <p><b>Ý chính:</b></p>
+    <ul>{% for t in draft.key_takeaways %}<li>{{ t }}</li>{% endfor %}</ul>
+    <p><b>Gợi ý link nội bộ:</b></p>
+    <ul>
+      {% for l in draft.internal_link_suggestions %}
+        <li>{{ l.anchor }} → {{ l.path }}</li>
+      {% endfor %}
+    </ul>
+    <hr>
+    <h3>{{ draft.title }}</h3>
+    <div class="keno-note">{{ draft.body_html|safe }}</div>
+    {% if draft.faqs %}
+      <h3>FAQ</h3>
+      {% for f in draft.faqs %}
+        <p><b>{{ f.question|default:f.q }}</b><br>{{ f.answer|default:f.a }}</p>
+      {% endfor %}
+    {% endif %}
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

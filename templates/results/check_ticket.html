@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-head">
+  <h1>Dò vé Keno</h1>
+</section>
+<form class="card form" method="post">
+  {% csrf_token %}
+  <label>Mã kỳ
+    <select name="period_code">
+      {% for d in recent %}
+        <option value="{{ d.period_code }}" {% if latest and d.period_code == latest.period_code %}selected{% endif %}>{{ d.period_code }} · {{ d.drawn_at|date:"H:i d/m" }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Dãy số (cách nhau bởi dấu cách)
+    <input name="numbers" inputmode="numeric" placeholder="05 12 23 41 60" required>
+  </label>
+  <button class="btn btn-gold" type="submit">Kiểm tra</button>
+  {% if error %}<p class="flash flash-error">{{ error }}</p>{% endif %}
+</form>
+{% if result %}
+<section class="card">
+  <h2>Kỳ {{ result.draw.period_code }}</h2>
+  <p>Trùng <strong>{{ result.match_count }}</strong> số: {% for n in result.matched %}{{ n|stringformat:"02d" }} {% empty %}không trùng{% endfor %}</p>
+  <ol class="balls">
+    {% for n in result.draw.numbers_sorted %}
+      <li class="{% if n in result.matched %}is-hit{% endif %}">{{ n|stringformat:"02d" }}</li>
+    {% endfor %}
+  </ol>
+</section>
+{% endif %}
+{% endblock %}

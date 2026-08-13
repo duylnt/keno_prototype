@@ -1,0 +1,82 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="keno-dash">
+  {% include "admin/reports/_chrome.html" %}
+
+  <section class="keno-kpis">
+    <article class="keno-kpi">
+      <span>Find POS CTR</span>
+      <strong>{{ o2o.find_pos_ctr }}%</strong>
+      <em>{{ o2o.find_pos }} lượt nhấp Tìm điểm bán</em>
+    </article>
+    <article class="keno-kpi">
+      <span>Tìm kiếm điểm bán</span>
+      <strong>{{ o2o.pos_search }}</strong>
+    </article>
+    <article class="keno-kpi">
+      <span>Xem chi tiết POS</span>
+      <strong>{{ o2o.pos_detail }}</strong>
+      <em>{{ o2o.pos_count }} điểm bán đang hoạt động</em>
+    </article>
+    <article class="keno-kpi">
+      <span>Cấp quyền vị trí</span>
+      <strong>{{ o2o.loc_perm_rate }}%</strong>
+      <em>{{ o2o.loc_perm }} lượt cho phép GPS</em>
+    </article>
+    <article class="keno-kpi">
+      <span>Get Directions CTR</span>
+      <strong>{{ o2o.directions_ctr }}%</strong>
+      <em>{{ o2o.directions }} lượt Chỉ đường</em>
+    </article>
+    <article class="keno-kpi">
+      <span>Ý định digital → POS</span>
+      <strong>{{ o2o.intent_rate }}%</strong>
+      <em>{{ o2o.intent_sessions }} phiên có hành vi điểm bán</em>
+    </article>
+    <article class="keno-kpi">
+      <span>Mã O2O phát hành</span>
+      <strong>{{ o2o.issued }}</strong>
+    </article>
+    <article class="keno-kpi">
+      <span>Đã quét tại POS</span>
+      <strong>{{ o2o.redeemed }}</strong>
+      <em>Tỷ lệ quét {{ o2o.rate }}%</em>
+    </article>
+  </section>
+
+  {{ event_bars|json_script:"keno-event-bars" }}
+  <div class="keno-chart-box">
+    <h3>Sự kiện điểm bán</h3>
+    <canvas id="keno-events-chart" height="220"></canvas>
+  </div>
+
+  <section class="keno-card">
+    <h3>Mã O2O gần đây</h3>
+    {% if o2o.recent_codes %}
+    <table class="keno-table">
+      <thead>
+        <tr>
+          <th>Mã</th>
+          <th>Phát hành</th>
+          <th>Quét tại POS</th>
+          <th>Điểm bán</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in o2o.recent_codes %}
+          <tr>
+            <td>{{ c.code }}</td>
+            <td>{{ c.created_at|date:"d/m/Y H:i" }}</td>
+            <td>{% if c.redeemed_at %}{{ c.redeemed_at|date:"d/m/Y H:i" }}{% else %}—{% endif %}</td>
+            <td>{{ c.pos_name|default:"—" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <p class="keno-note">Chưa có dữ liệu</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

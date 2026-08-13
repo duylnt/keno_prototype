@@ -1,0 +1,157 @@
+{% load static %}
+{% load seo_tags %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{{ page_title|default:site_settings.site_name }}</title>
+  <meta name="description" content="{{ meta_description|default:site_settings.tagline }}">
+  <meta name="robots" content="{{ seo_robots|default:'index,follow' }}">
+  <link rel="canonical" href="{{ canonical_url }}">
+  <link rel="alternate" type="text/plain" title="llms.txt" href="{{ seo_llms_url }}">
+  <meta property="og:locale" content="vi_VN">
+  <meta property="og:type" content="{{ seo_og_type|default:'website' }}">
+  <meta property="og:site_name" content="{{ site_settings.site_name }}">
+  <meta property="og:title" content="{{ page_title|default:site_settings.site_name }}">
+  <meta property="og:description" content="{{ meta_description|default:site_settings.tagline }}">
+  <meta property="og:url" content="{{ canonical_url }}">
+  {% if seo_og_image %}
+  <meta property="og:image" content="{{ seo_og_image }}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="{{ seo_og_image }}">
+  {% else %}
+  <meta name="twitter:card" content="summary">
+  {% endif %}
+  <meta name="twitter:title" content="{{ page_title|default:site_settings.site_name }}">
+  <meta name="twitter:description" content="{{ meta_description|default:site_settings.tagline }}">
+  <meta name="theme-color" content="#ed1b2f">
+  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'img/keno-icon.png' %}">
+  <link rel="icon" type="image/png" sizes="192x192" href="{% static 'img/keno-icon.png' }">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Chakra+Petch:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/keno.css' %}">
+  {% jsonld_script %}
+  {% if gtm_id %}
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','{{ gtm_id }}');</script>
+  {% endif %}
+  {% if ga4_id %}
+  <script async src="https://www.googletagmanager.com/gtag/js?id={{ ga4_id }}"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','{{ ga4_id }}');</script>
+  {% endif %}
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  {% if gtm_id %}<noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ gtm_id }}" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>{% endif %}
+  {% block chrome %}
+  <header class="desk-header desktop-only">
+    <div class="desk-header-inner">
+      <a class="brand brand-lg" href="{% url 'core:home' %}">
+        <img class="brand-logo" src="{% static 'img/keno-logo.png' %}" alt="{{ site_settings.site_name }}">
+      </a>
+      <nav class="desk-nav" aria-label="Điều hướng chính">
+        <a class="nav-core{% if request.path == '/ket-qua/' %} is-active{% endif %}" href="{% url 'results:live' %}">Kết quả</a>
+        <a class="nav-core{% if '/thong-ke' in request.path %} is-active{% endif %}" href="{% url 'results:stats' %}">Thống kê</a>
+        <a class="nav-wide{% if '/do-ve' in request.path %} is-active{% endif %}" href="{% url 'results:check_ticket' %}">Dò vé</a>
+        <a class="nav-core{% if '/diem-ban' in request.path %} is-active{% endif %}" href="{% url 'locations:finder' %}">Điểm bán</a>
+        <a class="nav-core{% if '/cong-dong' in request.path and '/noi-quy' not in request.path %} is-active{% endif %}" href="{% url 'community:hub' %}">Cộng đồng</a>
+        <div class="desk-nav-dd">
+          <a class="desk-nav-dd-trigger{% if '/thong-tin' in request.path or '/huong-dan' in request.path or '/choi-thu' in request.path or '/bai-viet' in request.path or 'choi-co-trach-nhiem' in request.path or request.path == '/cong-dong/noi-quy/' %} is-active{% endif %}" href="{% url 'content:info_hub' %}" aria-haspopup="true" aria-expanded="false">Thông tin</a>
+          <div class="desk-nav-dd-menu" aria-label="Mục Thông tin">
+            {% include "includes/info_nav_links.html" %}
+          </div>
+        </div>
+        <div class="desk-nav-more">
+          <button type="button" class="desk-nav-more-btn" aria-expanded="false" aria-haspopup="true">Thêm</button>
+          <div class="desk-nav-more-menu" hidden>
+            <a class="nav-wide-dup" href="{% url 'results:check_ticket' %}">Dò vé</a>
+          </div>
+        </div>
+      </nav>
+      {% include "includes/live_tab.html" with live_tab_mod="live-tab--desk" %}
+      <div class="desk-actions">
+        <a class="btn btn-ghost btn-sm btn-cta" href="{% url 'community:join' %}" data-track="community_cta">{{ site_settings.community_cta_label }}</a>
+        <button type="button" class="btn btn-gold btn-sm btn-cta" data-buy-ticket data-track="find_pos_click">Mua vé</button>
+      </div>
+    </div>
+  </header>
+  <header class="topbar mobile-only">
+    <a class="brand" href="{% url 'core:home' %}">
+      <img class="brand-logo" src="{% static 'img/keno-logo.png' %}" alt="{{ site_settings.site_name }}">
+    </a>
+    <div class="topbar-live" data-countdown-label>
+      <span class="pulse"></span>
+      <span>Kỳ tới <b data-countdown>{{ nav_countdown }}</b></span>
+    </div>
+  </header>
+  {% endblock %}
+
+  <main class="{% block main_class %}shell{% endblock %}">
+    {% if messages %}
+      <div class="flash-list">
+        {% for message in messages %}
+          <p class="flash flash-{{ message.tags }}">{{ message }}</p>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% if breadcrumbs %}
+    <nav class="crumbs" aria-label="Đường dẫn">
+      {% for name, url in breadcrumbs %}
+        {% if not forloop.last %}
+          <a href="{{ url }}">{{ name }}</a><span aria-hidden="true">/</span>
+        {% else %}
+          <span>{{ name }}</span>
+        {% endif %}
+      {% endfor %}
+    </nav>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+
+  {% block footer %}
+  <footer class="site-footer">
+    <div class="footer-brand">
+      <p class="footer-title">{{ site_settings.site_name }}</p>
+      <p>{{ site_settings.tagline }}</p>
+    </div>
+    <nav class="footer-links" aria-label="Liên kết phụ">
+      <a href="{% url 'content:info_hub' %}">Thông tin</a>
+      <a href="{% url 'results:check_ticket' %}">Dò vé</a>
+      <a href="{% url 'results:stats' %}">Thống kê</a>
+      <a href="{% url 'content:static_page' 'choi-co-trach-nhiem' %}">Chơi có trách nhiệm</a>
+      <a href="{% url 'community:guidelines' %}">Nội quy</a>
+      <a href="{% url 'core:live_results' %}">Trực tiếp kết quả</a>
+    </nav>
+    <p class="fineprint">Chơi có trách nhiệm.</p>
+  </footer>
+  <nav class="tabbar mobile-only" aria-label="Điều hướng chính">
+    <a href="{% url 'results:live' %}" class="{% if request.path == '/ket-qua/' %}is-active{% endif %}">
+      <span>◎</span>Kết quả
+    </a>
+    {% include "includes/live_tab.html" with live_tab_mod="live-tab--tabbar" %}
+    <a href="{% url 'results:stats' %}" class="{% if '/thong-ke' in request.path %}is-active{% endif %}">
+      <span>▤</span>Thống kê
+    </a>
+    <a href="{% url 'locations:finder' %}" class="{% if '/diem-ban' in request.path %}is-active{% endif %}">
+      <span>⌖</span>Điểm bán
+    </a>
+    <a href="{% url 'community:hub' %}" class="{% if '/cong-dong' in request.path and '/noi-quy' not in request.path %}is-active{% endif %}">
+      <span>◈</span>Cộng đồng
+    </a>
+    <a href="{% url 'content:info_hub' %}" class="{% if '/thong-tin' in request.path or '/huong-dan' in request.path or '/choi-thu' in request.path or '/bai-viet' in request.path or 'choi-co-trach-nhiem' in request.path or request.path == '/cong-dong/noi-quy/' %}is-active{% endif %}">
+      <span>ⓘ</span>Thông tin
+    </a>
+  </nav>
+  <div class="convert-bar mobile-only">
+    <a class="btn btn-ghost btn-sm" href="{% url 'community:join' %}" data-track="community_cta">{{ site_settings.community_cta_label }}</a>
+    <button type="button" class="btn btn-gold btn-sm" data-buy-ticket data-track="find_pos_click">Mua vé</button>
+  </div>
+  {% include "includes/buy_ticket_dialog.html" %}
+  {% endblock %}
+
+  <script>window.KENO = { csrf: "{{ csrf_token }}", liveApi: "{% url 'results:live_api' %}", sse: "{% url 'results:live_sse' %}", track: "{% url 'analytics:collect' %}" };</script>
+  <script src="{% static 'js/keno.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

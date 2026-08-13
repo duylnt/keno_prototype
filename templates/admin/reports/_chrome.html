@@ -1,0 +1,49 @@
+{% load i18n %}
+<div class="keno-chrome">
+  <div>
+    <h2>{{ title }}</h2>
+    <p class="keno-lead">
+      Kỳ {{ date_start|date:"d/m/Y" }} – {{ date_end|date:"d/m/Y" }}
+      · {{ span_days }} ngày
+      · So với {{ prev_start|date:"d/m/Y" }} – {{ prev_end|date:"d/m/Y" }}
+    </p>
+  </div>
+
+  <nav class="keno-tabs" aria-label="Báo cáo">
+    {% for p in report_pages %}
+      <a href="{% url p.url_name %}{% if date_preset and date_preset != 'custom' %}?range={{ date_preset }}{% elif date_preset == 'custom' %}?start={{ date_start|date:'Y-m-d' }}&end={{ date_end|date:'Y-m-d' }}{% endif %}"
+         class="{% if p.key == report_key %}is-active{% endif %}">{{ p.title }}</a>
+    {% endfor %}
+  </nav>
+
+  <div class="keno-range">
+    <a href="?range=7" class="{% if date_preset == '7' %}is-active{% endif %}">7 ngày</a>
+    <a href="?range=30" class="{% if date_preset == '30' %}is-active{% endif %}">30 ngày</a>
+    <a href="?range=90" class="{% if date_preset == '90' %}is-active{% endif %}">90 ngày</a>
+    <a href="?range=month" class="{% if date_preset == 'month' %}is-active{% endif %}">Tháng này</a>
+    <form method="get">
+      <input type="date" name="start" value="{{ date_start|date:'Y-m-d' }}">
+      <input type="date" name="end" value="{{ date_end|date:'Y-m-d' }}">
+      <button type="submit" class="keno-btn">Lọc</button>
+    </form>
+  </div>
+
+  <div class="keno-actions">
+    <form method="post" action="{% url 'admin:analytics_sync_google' %}">
+      {% csrf_token %}
+      <input type="hidden" name="source" value="ga4">
+      <input type="hidden" name="next" value="{{ request.path }}{{ range_query }}">
+      <button type="submit" class="keno-btn keno-btn-primary">Đồng bộ GA4</button>
+    </form>
+    <form method="post" action="{% url 'admin:analytics_sync_google' %}">
+      {% csrf_token %}
+      <input type="hidden" name="source" value="gsc">
+      <input type="hidden" name="next" value="{{ request.path }}{{ range_query }}">
+      <button type="submit" class="keno-btn">Đồng bộ Search Console</button>
+    </form>
+    <span class="keno-note">
+      GA4: {{ ga4_property }} {% if ga4_configured %}· đã cấu hình{% else %}· dữ liệu mẫu{% endif %}
+      · GSC: {{ gsc_site }}
+    </span>
+  </div>
+</div>

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-head">
+  <h1>Lịch sử kết quả Keno</h1>
+  <form class="filter" method="get">
+    <label>Ngày <input type="date" name="date" value="{{ selected }}"></label>
+    <button class="btn btn-gold" type="submit">Xem</button>
+  </form>
+</section>
+<div class="table-wrap">
+  <table class="data">
+    <thead>
+      <tr><th>Mã kỳ</th><th>Thời điểm</th><th>20 số</th><th>L/N</th><th>C/L</th></tr>
+    </thead>
+    <tbody>
+      {% for d in draws %}
+      <tr>
+        <td>{{ d.period_code }}</td>
+        <td>{{ d.drawn_at|date:"H:i d/m" }}</td>
+        <td class="nums">{% for n in d.numbers_sorted %}{{ n|stringformat:"02d" }} {% endfor %}</td>
+        <td>{{ d.size_label }}</td>
+        <td>{{ d.parity_label }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5">Không có dữ liệu.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

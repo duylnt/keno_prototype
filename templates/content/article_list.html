@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-head">
+  <h1>Tin & hướng dẫn Keno</h1>
+  <div class="cta-row wrap">
+    <a class="chip-link {% if not category %}is-on{% endif %}" href="{% url 'content:article_list' %}">Tất cả</a>
+    {% for c in categories %}
+      <a class="chip-link {% if category.slug == c.slug %}is-on{% endif %}" href="?nhom={{ c.slug }}">{{ c.name }}</a>
+    {% endfor %}
+  </div>
+</section>
+<div class="article-grid">
+  {% for a in articles %}
+    <a class="article-card" href="{{ a.get_absolute_url }}">
+      {% if a.cover %}
+        <img class="article-thumb" src="{{ a.cover.url }}" alt="{{ a.cover_alt|default:a.title }}" width="400" height="220" loading="lazy">
+      {% endif %}
+      <span class="pill">{{ a.category.name }}</span>
+      <h2>{{ a.title }}</h2>
+      <p>{{ a.excerpt }}</p>
+    </a>
+  {% empty %}
+    <p>Chưa có bài viết.</p>
+  {% endfor %}
+</div>
+{% endblock %}

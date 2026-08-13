@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{% endblock %}
+{% block content %}
+<section class="page-head">
+  <h1>Lịch sử Chẵn / Lẻ</h1>
+  <p class="muted">Chẵn ≥11 số chẵn · Lẻ ≥11 số lẻ · Hòa 10–10</p>
+</section>
+<article class="card">
+  <div class="chart-frame chart-frame-line">
+    <canvas id="parityTrend"></canvas>
+  </div>
+</article>
+<div class="table-wrap">
+  <table class="data">
+    <thead><tr><th>Kỳ</th><th>Chẵn</th><th>Lẻ</th><th>Kết quả</th></tr></thead>
+    <tbody>
+      {% for d in draws %}
+      <tr><td>{{ d.period_code }}</td><td>{{ d.even_count }}</td><td>{{ d.odd_count }}</td><td>{{ d.parity_label }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<script id="keno-series" type="application/json">{{ series_json|safe }}</script>
+{% endblock %}

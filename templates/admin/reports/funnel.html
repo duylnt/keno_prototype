@@ -1,0 +1,44 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="keno-dash">
+  {% include "admin/reports/_chrome.html" %}
+
+  <section class="keno-kpis">
+    <article class="keno-kpi">
+      <span>{{ north_star.label }}</span>
+      <strong>{{ north_star.value }}</strong>
+      <em>
+        Returning {{ north_star.supporting.returning_pct }}%
+        · Result checks {{ north_star.supporting.result_checks }}
+        · POS intent {{ north_star.supporting.pos_intent }}
+      </em>
+    </article>
+    <article class="keno-kpi">
+      <span>GA4 active users</span>
+      <strong>{{ north_star.supporting.ga4_active }}</strong>
+      <em>Trong kỳ</em>
+    </article>
+  </section>
+
+  {{ funnel_chart|json_script:"keno-funnel-series" }}
+  <div class="keno-charts">
+    <div class="keno-chart-box">
+      <h3>Digital → POS → O2O</h3>
+      <canvas id="keno-funnel-chart" height="220"></canvas>
+    </div>
+  </div>
+
+  {% for stage in funnel %}
+    <section class="keno-stage">
+      <h3>{{ stage.stage }}</h3>
+      <div class="keno-metrics">
+        {% for m in stage.metrics %}
+          <div>{{ m.label }}: <b>{{ m.value }}</b> <span class="keno-pill">{{ m.source }}</span></div>
+        {% endfor %}
+      </div>
+    </section>
+  {% endfor %}
+</div>
+{% endblock %}

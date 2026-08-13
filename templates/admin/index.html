@@ -1,0 +1,54 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{% block branding %}
+    {% include "unfold/helpers/site_branding.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="keno-dash">
+  <div>
+    <h2>Tổng quan</h2>
+  </div>
+
+  <section class="keno-kpis">
+    {% for k in keno_kpis %}
+      <article class="keno-kpi">
+        <span>{{ k.label }}</span>
+        <strong>{{ k.value }}</strong>
+        {% if k.hint %}<em>{{ k.hint }}</em>{% endif %}
+      </article>
+    {% endfor %}
+  </section>
+
+  {{ keno_ga4_series|json_script:"keno-ga4-series" }}
+  {{ keno_funnel|json_script:"keno-funnel-series" }}
+
+  <div class="keno-charts">
+    <div class="keno-chart-box">
+      <h3>Traffic 30 ngày (GA4)</h3>
+      <canvas id="keno-home-traffic" height="220"></canvas>
+    </div>
+    <div class="keno-chart-box">
+      <h3>Kích hoạt → O2O</h3>
+      <canvas id="keno-home-funnel" height="220"></canvas>
+    </div>
+  </div>
+
+  <section>
+    <div class="keno-shortcuts">
+      {% for s in keno_shortcuts %}
+        <a class="keno-shortcut" href="{% url s.url_name %}">
+          <span class="material-symbols-outlined">{{ s.icon }}</span>
+          <strong>{{ s.title }}</strong>
+        </a>
+      {% endfor %}
+    </div>
+  </section>
+
+  <p class="keno-note">
+    Kỳ quay đã lưu: {{ keno_draw_count }}{% if keno_draw %} · mới nhất {{ keno_draw.period_code }}{% endif %}
+    · {{ keno_articles }} bài SEO · {{ keno_pos_count }} điểm bán · {{ keno_o2o_week }} mã O2O / 7 ngày.
+  </p>
+</div>
+{% endblock %}

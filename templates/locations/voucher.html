@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-head">
+  <h1>Mã trải nghiệm O2O</h1>
+</section>
+<form class="card" method="post">
+  {% csrf_token %}
+  <button class="btn btn-gold" type="submit">Nhận mã 24 giờ</button>
+</form>
+{% if code %}
+<section class="card voucher">
+  <p class="eyebrow">Mã của bạn</p>
+  <p class="code">{{ code.code }}</p>
+  <p>Hết hạn {{ code.expires_at|date:"H:i d/m" }}</p>
+</section>
+{% endif %}
+{% endblock %}

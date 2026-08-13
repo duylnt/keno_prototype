@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-head">
+  <h1>Quét mã O2O tại POS</h1>
+</section>
+<form class="card form" method="post">
+  {% csrf_token %}
+  <label>Mã trải nghiệm <input name="code" required placeholder="ABCD1234"></label>
+  <label>Tên điểm bán <input name="pos_name" placeholder="Điểm bán Keno Quận 1"></label>
+  <button class="btn btn-gold" type="submit">Xác nhận</button>
+</form>
+{% if message %}<p class="flash">{{ message }}</p>{% endif %}
+{% endblock %}

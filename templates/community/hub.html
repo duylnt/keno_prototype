@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-head">
+  <h1>Cộng đồng người chơi Keno</h1>
+  <div class="cta-row">
+    <a class="btn btn-gold" href="{% url 'community:join' %}" data-track="community_cta">{{ site_settings.community_cta_label }}</a>
+    <button type="button" class="btn btn-ghost" data-buy-ticket data-track="find_pos_click">Mua vé</button>
+    <a class="btn btn-ghost" href="{% url 'community:guidelines' %}">Nội quy</a>
+  </div>
+</section>
+
+{% for b in banners %}
+  <aside class="banner-strip">
+    <strong>{{ b.title }}</strong>
+    <span>{{ b.subtitle }}</span>
+  </aside>
+{% endfor %}
+
+<section class="grid-2">
+  <article class="card">
+    <h2>Chủ đề nổi bật</h2>
+    <ul class="topic-list">
+      {% for post in posts %}
+        <li>
+          <span class="pill">{{ post.get_pillar_display }}</span>
+          <strong>{{ post.title }}</strong>
+          <p>{{ post.body }}</p>
+          <small>{{ post.author_name }} · {{ post.comment_count }} trao đổi · {{ post.created_at|date:"d/m H:i" }}</small>
+        </li>
+      {% endfor %}
+    </ul>
+  </article>
+  <aside>
+    <div class="card">
+      <h2>Hoạt động đã duyệt</h2>
+      {% for e in events %}
+        <p><strong>{{ e.title }}</strong><br>{{ e.scheduled_at|date:"d/m H:i" }} · {{ e.participants }} người quan tâm<br><span class="muted">{{ e.reward_note }}</span></p>
+      {% empty %}
+        <p class="muted">Chưa có minigame sắp tới.</p>
+      {% endfor %}
+    </div>
+    <div class="card">
+      <h2>Gửi chủ đề (chờ duyệt)</h2>
+      <form class="form" method="post" action="{% url 'community:submit_post' %}">
+        {% csrf_token %}
+        <label>Tên <input name="author_name" maxlength="80" placeholder="Biệt danh"></label>
+        <label>Chủ đề <input name="title" required maxlength="200"></label>
+        <label>Nội dung <textarea name="body" rows="4" required></textarea></label>
+        <button class="btn btn-gold" type="submit">Gửi kiểm duyệt</button>
+      </form>
+    </div>
+  </aside>
+</section>
+{% include "includes/facebook_discussion.html" with discussion_posts=posts %}
+{% endblock %}

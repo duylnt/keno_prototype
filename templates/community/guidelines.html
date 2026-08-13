@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-head">
+  <h1>Nội quy cộng đồng</h1>
+</section>
+{% for g in guidelines %}
+  <article class="card prose">
+    <h2>{{ g.title }}</h2>
+    {{ g.body|safe }}
+  </article>
+{% endfor %}
+<section class="card">
+  <h2>Câu hỏi lọc thành viên</h2>
+  <ol class="rank">
+    {% for q in questions %}
+      <li><strong>{{ q.question }}</strong><br><span class="muted">{{ q.hint }}</span></li>
+    {% endfor %}
+  </ol>
+  <a class="btn btn-gold" href="{% url 'community:join' %}">Tham gia nhóm</a>
+</section>
+{% endblock %}

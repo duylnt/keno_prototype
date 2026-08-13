@@ -1,0 +1,483 @@
+/* Keno CMS — light, lean, operational. Do not use on the public site. */
+
+:root {
+  --cms-bg: #fafafa;
+  --cms-surface: #ffffff;
+  --cms-ink: #18181b;
+  --cms-muted: #71717a;
+  --cms-line: #e4e4e7;
+  --cms-accent: #c41e3a;
+  --cms-ok: #15803d;
+  --cms-warn: #b45309;
+}
+
+html.light body,
+body {
+  background: var(--cms-bg);
+}
+
+/* Sidebar brand — light strip so the orange/red Keno mark reads clearly */
+#nav-sidebar,
+#nav-sidebar-inner {
+  background: #ffffff;
+}
+
+a.keno-cms-brand {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.keno-cms-logo {
+  height: auto !important;
+  width: auto !important;
+  max-height: 56px;
+  max-width: 168px;
+  object-fit: contain;
+  object-position: left center;
+  margin-right: 0 !important;
+}
+
+/* Account lives in the main header; hide leftover sidebar user block */
+#nav-sidebar-inner > [x-data*="openUserLinks"] {
+  display: none !important;
+}
+
+.keno-cms-account-trigger {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-sizing: border-box;
+  height: 36px;
+  max-width: 220px;
+  padding: 0 6px 0 10px;
+  border: 1px solid var(--cms-line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--cms-ink);
+  font: inherit;
+  line-height: 1;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.keno-cms-account-trigger:hover,
+.keno-cms-account-trigger.is-open {
+  background: #fafafa;
+  border-color: #d4d4d8;
+}
+
+.keno-cms-account-icon,
+.keno-cms-account-caret {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
+  overflow: hidden;
+}
+
+.keno-cms-account-icon {
+  font-size: 20px !important;
+  font-variation-settings: "FILL" 0, "wght" 300, "GRAD" 0, "opsz" 20;
+  color: var(--cms-muted);
+}
+
+.keno-cms-account-name {
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--cms-ink);
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.keno-cms-account-caret {
+  font-size: 20px !important;
+  font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 20;
+  margin-left: -2px;
+  color: #52525b;
+}
+
+.keno-cms-account-email {
+  padding: 8px 12px 10px;
+  font-size: 12px;
+  color: var(--cms-muted);
+  line-height: 1.35;
+  word-break: break-all;
+  border-bottom: 1px solid var(--cms-line);
+  margin-bottom: 4px;
+}
+
+.keno-cms-account-menu button {
+  border: 0;
+  background: transparent;
+  font: inherit;
+}
+
+/* Compact tables */
+#result_list td,
+#result_list th,
+.results td,
+.results th {
+  padding-top: 0.5rem !important;
+  padding-bottom: 0.5rem !important;
+  font-size: 13px;
+}
+
+#changelist-form .actions {
+  gap: 0.5rem;
+}
+
+/* Dashboard / reports */
+.keno-dash {
+  display: grid;
+  gap: 1.25rem;
+  max-width: 1120px;
+}
+
+.keno-dash h2,
+.keno-dash h3 {
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--cms-ink);
+  text-transform: none;
+}
+
+.keno-dash h2 { font-size: 1.125rem; }
+.keno-dash h3 { font-size: 0.95rem; }
+
+.keno-lead {
+  margin: 0;
+  color: var(--cms-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.keno-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+.keno-kpi {
+  background: var(--cms-surface);
+  border: 1px solid var(--cms-line);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.keno-kpi strong {
+  display: block;
+  font-size: 1.5rem;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  color: var(--cms-ink);
+  font-weight: 650;
+}
+
+.keno-kpi span {
+  color: var(--cms-muted);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.keno-kpi em {
+  display: block;
+  color: var(--cms-muted);
+  font-style: normal;
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.keno-stage,
+.keno-card {
+  background: var(--cms-surface);
+  border: 1px solid var(--cms-line);
+  border-radius: 8px;
+  padding: 16px 18px;
+}
+
+.keno-stage h3,
+.keno-card h3 {
+  margin: 0 0 10px;
+}
+
+.keno-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 8px 16px;
+}
+
+.keno-metrics > div {
+  font-size: 13px;
+  color: var(--cms-muted);
+}
+
+.keno-metrics b {
+  color: var(--cms-ink);
+  font-weight: 600;
+}
+
+.keno-note {
+  font-size: 12.5px;
+  color: var(--cms-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.keno-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.keno-table th,
+.keno-table td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--cms-line);
+}
+
+.keno-table th {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cms-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.keno-table tbody tr:hover {
+  background: #fafafa;
+}
+
+.keno-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.keno-actions button,
+.keno-btn {
+  appearance: none;
+  border: 1px solid var(--cms-line);
+  background: var(--cms-surface);
+  color: var(--cms-ink);
+  border-radius: 6px;
+  padding: 7px 12px;
+  font-size: 13px;
+  font-weight: 550;
+  cursor: pointer;
+}
+
+.keno-btn-primary,
+.keno-actions .keno-btn-primary {
+  background: var(--cms-accent);
+  border-color: var(--cms-accent);
+  color: #fff;
+}
+
+.keno-btn:hover,
+.keno-actions button:hover {
+  border-color: #d4d4d8;
+}
+
+.keno-btn-primary:hover {
+  filter: brightness(1.05);
+}
+
+.keno-chrome {
+  display: grid;
+  gap: 12px;
+}
+
+.keno-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  border-bottom: 1px solid var(--cms-line);
+  padding-bottom: 8px;
+}
+
+.keno-tabs a {
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--cms-muted);
+  text-decoration: none;
+}
+
+.keno-tabs a:hover {
+  background: #f4f4f5;
+  color: var(--cms-ink);
+}
+
+.keno-tabs a.is-active {
+  background: #fef2f3;
+  color: var(--cms-accent);
+  font-weight: 600;
+}
+
+.keno-range {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.keno-range a,
+.keno-range button {
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--cms-line);
+  background: #fff;
+  color: var(--cms-muted);
+  text-decoration: none;
+}
+
+.keno-range a.is-active {
+  border-color: var(--cms-accent);
+  color: var(--cms-accent);
+  background: #fef2f3;
+}
+
+.keno-range form {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.keno-range input[type="date"] {
+  border: 1px solid var(--cms-line);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 12px;
+  background: #fff;
+}
+
+.keno-charts {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 900px) {
+  .keno-charts { grid-template-columns: 1fr; }
+}
+
+.keno-chart-box {
+  background: var(--cms-surface);
+  border: 1px solid var(--cms-line);
+  border-radius: 8px;
+  padding: 16px 18px;
+  min-height: 260px;
+}
+
+.keno-chart-box canvas {
+  max-height: 220px;
+}
+
+.keno-shortcuts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+}
+
+.keno-shortcut {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid var(--cms-line);
+  border-radius: 8px;
+  background: #fff;
+  text-decoration: none;
+  color: inherit;
+}
+
+.keno-shortcut:hover {
+  border-color: #d4d4d8;
+  background: #fafafa;
+}
+
+.keno-shortcut .material-symbols-outlined {
+  font-size: 18px;
+  color: var(--cms-accent);
+}
+
+.keno-shortcut strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.keno-funnel-row {
+  display: grid;
+  grid-template-columns: 160px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  margin: 8px 0;
+  font-size: 13px;
+}
+
+.keno-funnel-bar {
+  height: 10px;
+  background: #f4f4f5;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.keno-funnel-bar > i {
+  display: block;
+  height: 100%;
+  background: var(--cms-accent);
+  border-radius: 999px;
+}
+
+.keno-funnel-row b { font-variant-numeric: tabular-nums; }
+
+.keno-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f4f4f5;
+  color: var(--cms-muted);
+}
+
+.keno-pill.ok { background: #dcfce7; color: var(--cms-ok); }
+.keno-pill.warn { background: #ffedd5; color: var(--cms-warn); }
+
+.keno-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.keno-dash input[type="text"],
+.keno-dash input:not([type]),
+.keno-dash textarea,
+.keno-dash select {
+  border: 1px solid var(--cms-line);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 13px;
+  width: 100%;
+  background: #fff;
+}
+
+@media (max-width: 800px) {
+  .keno-grid-2,
+  .keno-funnel-row { grid-template-columns: 1fr; }
+}

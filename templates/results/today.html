@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-head">
+  <p class="eyebrow">{{ day|date:"l, d/m/Y" }}</p>
+  <h1>Kết quả Keno hôm nay</h1>
+</section>
+<div class="table-wrap">
+  <table class="data">
+    <thead>
+      <tr><th>Kỳ</th><th>Giờ</th><th>20 số</th><th>Tổng</th><th>L/N</th><th>C/L</th></tr>
+    </thead>
+    <tbody>
+      {% for d in draws %}
+      <tr>
+        <td>{{ d.sequence }}</td>
+        <td>{{ d.drawn_at|date:"H:i" }}</td>
+        <td class="nums">{% for n in d.numbers_sorted %}{{ n|stringformat:"02d" }} {% endfor %}</td>
+        <td>{{ d.total }}</td>
+        <td>{{ d.size_label }}</td>
+        <td>{{ d.parity_label }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6">Chưa có kỳ nào trong ngày.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

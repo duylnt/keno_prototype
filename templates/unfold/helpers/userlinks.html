@@ -1,0 +1,37 @@
+{% load i18n static unfold %}
+
+<div class="flex flex-row gap-4 items-center ml-auto">
+    {% if environment %}
+        {% include "unfold/helpers/label.html" with text=environment.0 type=environment.1 %}
+    {% endif %}
+
+    {% action_list %}
+
+    {% if nav_global_side %}
+        {{ nav_global_side }}
+    {% endif %}
+
+    <div class="keno-cms-account relative" x-data="{ openUserLinks: false }">
+        <button type="button"
+                class="keno-cms-account-trigger"
+                x-on:click="openUserLinks = !openUserLinks"
+                x-bind:class="{'is-open': openUserLinks}"
+                aria-haspopup="true"
+                x-bind:aria-expanded="openUserLinks.toString()">
+            <span class="material-symbols-outlined keno-cms-account-icon" aria-hidden="true">account_circle</span>
+            <span class="keno-cms-account-name">{{ user.get_full_name|default:user.get_username }}</span>
+            <span class="material-symbols-outlined keno-cms-account-caret" aria-hidden="true">arrow_drop_down</span>
+        </button>
+
+        <nav class="keno-cms-account-menu absolute bg-white border border-base-200 flex flex-col leading-none py-1 right-0 rounded-default shadow-lg top-full mt-1 w-56 z-50 dark:bg-base-800 dark:border-base-700"
+             x-cloak
+             x-show="openUserLinks"
+             x-transition
+             x-on:click.outside="openUserLinks = false">
+            {% if user.email %}
+                <div class="keno-cms-account-email">{{ user.email }}</div>
+            {% endif %}
+            {% include "unfold/helpers/account_links.html" %}
+        </nav>
+    </div>
+</div>

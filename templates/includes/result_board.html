@@ -1,0 +1,32 @@
+{% if draw %}
+<section class="board" data-live-board>
+  <div class="board-head">
+    <div>
+      <p class="eyebrow">Kỳ {{ draw.period_code }}</p>
+      <h1>{{ heading|default:"Kết quả mới nhất" }}</h1>
+      <p class="muted">Mở thưởng {{ draw.drawn_at|date:"H:i · d/m/Y" }}</p>
+    </div>
+    <div class="countdown-card">
+      <span>Kỳ tiếp theo</span>
+      <strong data-countdown>{{ countdown }}</strong>
+      <small data-next-label>{% if next_draw %}{{ next_draw|date:"H:i" }}{% endif %}</small>
+    </div>
+  </div>
+  <ol class="balls" data-balls>
+    {% for n in draw.numbers_sorted %}
+      <li class="{% if n|divisibleby:2 %}is-even{% else %}is-odd{% endif %}">{{ n|stringformat:"02d" }}</li>
+    {% endfor %}
+  </ol>
+  <div class="chips">
+    <span class="chip chip-gold">Tổng <b data-total>{{ draw.total }}</b></span>
+    <span class="chip" data-size>{{ draw.size_label }}</span>
+    <span class="chip" data-parity>{{ draw.parity_label }}</span>
+    <span class="chip ghost">Chẵn {{ draw.even_count }} · Lẻ {{ draw.odd_count }}</span>
+  </div>
+</section>
+{% else %}
+<section class="board">
+  <h1>Chưa có kỳ quay</h1>
+  <p>Ngoài khung giờ 06:00–21:52.</p>
+</section>
+{% endif %}

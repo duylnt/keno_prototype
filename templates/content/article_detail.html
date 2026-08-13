@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+<article class="prose card article-body">
+  <p class="eyebrow">{{ article.category.name }}</p>
+  <h1>{{ article.title }}</h1>
+  <p class="article-meta muted">
+    {% if article.author_name %}{{ article.author_name }} · {% endif %}
+    Đăng {{ article.published_at|date:"d/m/Y" }}
+    · Cập nhật {{ article.updated_at|date:"d/m/Y" }}
+  </p>
+  {% if article.cover %}
+    <p class="article-cover">
+      <img src="{{ article.cover.url }}" alt="{{ article.cover_alt|default:article.title }}" width="800" height="420" loading="lazy">
+    </p>
+  {% endif %}
+  {% if article.excerpt %}
+    <p class="lede">{{ article.excerpt }}</p>
+  {% endif %}
+  {% if article.takeaway_list %}
+    <section class="takeaways" aria-label="Ý chính">
+      <h2>Ý chính</h2>
+      <ul>
+        {% for item in article.takeaway_list %}
+          <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+  {{ article.body|safe }}
+</article>
+{% if article_faqs %}
+<section class="card faq-block" aria-label="Câu hỏi thường gặp">
+  <h2>Câu hỏi thường gặp</h2>
+  <dl class="faq-list">
+    {% for f in article_faqs %}
+      <dt>{{ f.question }}</dt>
+      <dd>{{ f.answer }}</dd>
+    {% endfor %}
+  </dl>
+</section>
+{% endif %}
+<section class="card">
+  <h2>Liên kết hữu ích</h2>
+  <ul class="feature-list">
+    <li><a href="{% url 'content:how_to_play' %}">Cách chơi Keno</a></li>
+    <li><a href="{% url 'results:live' %}">Kết quả kỳ mới nhất</a></li>
+    <li><a href="{% url 'results:stats' %}">Thống kê Lớn/Nhỏ · Chẵn/Lẻ</a></li>
+    <li><a href="{% url 'locations:finder' %}">Tìm điểm bán gần bạn</a></li>
+  </ul>
+</section>
+{% if related %}
+<section>
+  <h2>Bài liên quan</h2>
+  <div class="article-grid">
+    {% for a in related %}
+      <a class="article-card" href="{{ a.get_absolute_url }}"><h3>{{ a.title }}</h3><p>{{ a.excerpt }}</p></a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}

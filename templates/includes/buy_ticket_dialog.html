@@ -1,0 +1,12 @@
+<dialog class="buy-dialog" id="buy-ticket-dialog" aria-labelledby="buy-ticket-title">
+  <form method="dialog" class="buy-dialog-inner">
+    <h3 id="buy-ticket-title">Mua vé Keno</h3>
+    <p>Website <strong>không bán vé trực tuyến</strong>. Chọn cách tìm vé tại điểm bán chính thức:</p>
+    <a class="btn btn-gold btn-block" href="{{ buy_ticket_gps_url }}" data-track="find_pos_click">Điểm bán gần nhất (GPS)</a>
+    {% if zalo_group_url %}
+      <a class="btn btn-ghost btn-block" href="{{ zalo_group_url }}" target="_blank" rel="noopener" data-track="find_pos_click">Mua qua group Zalo</a>
+    {% endif %}
+    <button class="btn btn-ghost btn-block" type="submit">Đóng</button>
+    <p class="fineprint">Chơi có trách nhiệm · 18+</p>
+  </form>
+</dialog>
