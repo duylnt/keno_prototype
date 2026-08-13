@@ -51,13 +51,13 @@
         <img class="brand-logo" src="{% static 'img/keno-logo.png' %}" alt="{{ site_settings.site_name }}">
       </a>
       <nav class="desk-nav" aria-label="Điều hướng chính">
-        <a class="nav-core{% if request.path == '/ket-qua/' %} is-active{% endif %}" href="{% url 'results:live' %}">Kết quả</a>
-        <a class="nav-core{% if '/thong-ke' in request.path %} is-active{% endif %}" href="{% url 'results:stats' %}">Thống kê</a>
-        <a class="nav-wide{% if '/do-ve' in request.path %} is-active{% endif %}" href="{% url 'results:check_ticket' %}">Dò vé</a>
-        <a class="nav-core{% if '/diem-ban' in request.path %} is-active{% endif %}" href="{% url 'locations:finder' %}">Điểm bán</a>
-        <a class="nav-core{% if '/cong-dong' in request.path and '/noi-quy' not in request.path %} is-active{% endif %}" href="{% url 'community:hub' %}">Cộng đồng</a>
+        <a class="nav-core{% if nav_on.results %} is-active{% endif %}" href="{% url 'results:live' %}"{% if nav_on.results %} aria-current="page"{% endif %}>Kết quả</a>
+        <a class="nav-core{% if nav_on.stats %} is-active{% endif %}" href="{% url 'results:stats' %}"{% if nav_on.stats %} aria-current="page"{% endif %}>Thống kê</a>
+        <a class="nav-wide{% if nav_on.check %} is-active{% endif %}" href="{% url 'results:check_ticket' %}"{% if nav_on.check %} aria-current="page"{% endif %}>Dò vé</a>
+        <a class="nav-core{% if nav_on.locations %} is-active{% endif %}" href="{% url 'locations:finder' %}"{% if nav_on.locations %} aria-current="page"{% endif %}>Điểm bán</a>
+        <a class="nav-core{% if nav_on.community %} is-active{% endif %}" href="{% url 'community:hub' %}"{% if nav_on.community %} aria-current="page"{% endif %}>Cộng đồng</a>
         <div class="desk-nav-dd">
-          <a class="desk-nav-dd-trigger{% if '/thong-tin' in request.path or '/huong-dan' in request.path or '/choi-thu' in request.path or '/bai-viet' in request.path or 'choi-co-trach-nhiem' in request.path or request.path == '/cong-dong/noi-quy/' %} is-active{% endif %}" href="{% url 'content:info_hub' %}" aria-haspopup="true" aria-expanded="false">Thông tin</a>
+          <a class="desk-nav-dd-trigger{% if nav_on.info %} is-active{% endif %}" href="{% url 'content:info_hub' %}" aria-haspopup="true" aria-expanded="false"{% if nav_on.info %} aria-current="page"{% endif %}>Thông tin</a>
           <div class="desk-nav-dd-menu" aria-label="Mục Thông tin">
             {% include "includes/info_nav_links.html" %}
           </div>
@@ -65,7 +65,7 @@
         <div class="desk-nav-more">
           <button type="button" class="desk-nav-more-btn" aria-expanded="false" aria-haspopup="true">Thêm</button>
           <div class="desk-nav-more-menu" hidden>
-            <a class="nav-wide-dup" href="{% url 'results:check_ticket' %}">Dò vé</a>
+            <a class="nav-wide-dup{% if nav_on.check %} is-active{% endif %}" href="{% url 'results:check_ticket' %}"{% if nav_on.check %} aria-current="page"{% endif %}>Dò vé</a>
           </div>
         </div>
       </nav>
@@ -122,25 +122,26 @@
       <a href="{% url 'content:static_page' 'choi-co-trach-nhiem' %}">Chơi có trách nhiệm</a>
       <a href="{% url 'community:guidelines' %}">Nội quy</a>
       <a href="{% url 'core:live_results' %}">Trực tiếp kết quả</a>
+      <a href="{% url 'locations:partner_login' %}">Đăng nhập điểm bán</a>
     </nav>
     <p class="fineprint">Chơi có trách nhiệm.</p>
   </footer>
   <nav class="tabbar mobile-only" aria-label="Điều hướng chính">
-    <a href="{% url 'results:live' %}" class="{% if request.path == '/ket-qua/' %}is-active{% endif %}">
+    <a href="{% url 'results:live' %}"{% if nav_on.results %} class="is-active" aria-current="page"{% endif %}>
       <span>◎</span>Kết quả
     </a>
     {% include "includes/live_tab.html" with live_tab_mod="live-tab--tabbar" %}
-    <a href="{% url 'results:stats' %}" class="{% if '/thong-ke' in request.path %}is-active{% endif %}">
+    <a href="{% url 'results:stats' %}"{% if nav_on.stats %} class="is-active" aria-current="page"{% endif %}>
       <span>▤</span>Thống kê
     </a>
-    <a href="{% url 'locations:finder' %}" class="{% if '/diem-ban' in request.path %}is-active{% endif %}">
+    <a href="{% url 'locations:finder' %}"{% if nav_on.locations %} class="is-active" aria-current="page"{% endif %}>
       <span>⌖</span>Điểm bán
     </a>
-    <a href="{% url 'community:hub' %}" class="{% if '/cong-dong' in request.path and '/noi-quy' not in request.path %}is-active{% endif %}">
+    <a href="{% url 'community:hub' %}"{% if nav_on.community %} class="is-active" aria-current="page"{% endif %}>
       <span>◈</span>Cộng đồng
     </a>
-    <a href="{% url 'content:info_hub' %}" class="{% if '/thong-tin' in request.path or '/huong-dan' in request.path or '/choi-thu' in request.path or '/bai-viet' in request.path or 'choi-co-trach-nhiem' in request.path or request.path == '/cong-dong/noi-quy/' %}is-active{% endif %}">
-      <span>ⓘ</span>Thông tin
+    <a href="{% url 'content:info_hub' %}"{% if nav_on.info %} class="is-active" aria-current="page"{% endif %}>
+      <span>▣</span>Thông tin
     </a>
   </nav>
   <div class="convert-bar mobile-only">

@@ -22,6 +22,7 @@ python manage.py runserver
 - Public site: http://127.0.0.1:8000/
 - CMS: http://127.0.0.1:8000/cms/
 - Superuser: `admin` / `keno-admin-2026`
+- POS owner portal: http://127.0.0.1:8000/doi-tac/ — `chudiem` / `keno-pos-2026`
 
 Optional: `python manage.py test`
 
@@ -37,6 +38,34 @@ Optional: `python manage.py test`
 6. `python manage.py runserver`
 
 Đăng nhập CMS tại `/cms/` bằng `admin` / `keno-admin-2026`.
+
+Cổng chủ điểm bán: `/doi-tac/` — `chudiem` / `keno-pos-2026` (sau `seed_demo`).
+
+---
+
+## Fanpage Facebook (cộng đồng)
+
+Cộng đồng trên site **nhúng Fanpage**, không thay Facebook làm diễn đàn chính.
+
+1. CMS → **Cài đặt website** → card **Fanpage Facebook**: URL, Page ID, App ID, Page Access Token (ẩn), ghi chú vai trò.
+2. Hoặc `.env`: `FACEBOOK_PAGE_URL`, `FACEBOOK_PAGE_ID`, `FACEBOOK_APP_ID`, `FACEBOOK_PAGE_ACCESS_TOKEN`.
+3. `/cong-dong/` hiện Page Plugin khi có **URL + App ID**.
+4. Đồng bộ bài viết (Graph API, không scrape HTML):
+
+```bash
+python manage.py sync_facebook_page
+```
+
+Token Page cần `pages_read_engagement` (đọc bài) và `pages_manage_posts` (ẩn/gỡ đăng). CMS **Kiểm duyệt Fanpage** (`/cms/cong-dong/fanpage/`) mở sẵn Facebook Moderation / Inbox; nếu Graph từ chối quyền thì báo lỗi, không giả lập thành công. Token không bao giờ in ra HTML.
+
+---
+
+## Cổng chủ điểm bán
+
+- URL: `/doi-tac/` (đăng nhập `/doi-tac/dang-nhap/` hoặc `/diem-ban/dang-nhap/`)
+- Demo: `chudiem` / `keno-pos-2026` (Hoàn Kiếm). Tài khoản thứ hai: `chudiem2` cùng mật khẩu (Quận 1).
+- Xem hoa hồng khi mã O2O được quét tại **điểm của mình**, ví điểm thưởng, gửi yêu cầu quy đổi (CMS duyệt — mô phỏng, không chuyển khoản).
+- Nhân viên dùng `/cms/`. Gán `owner` trên Điểm bán Keno; nhóm `pos_owner`.
 
 ---
 

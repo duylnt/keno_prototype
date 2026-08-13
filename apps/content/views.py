@@ -1,11 +1,19 @@
+from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, render
-from django.urls import reverse
 
 from apps.seo.utils import absolute_url
 
 from .models import Article, ArticleCategory, StaticPage
 
 INFO_CRUMB = ("Thông tin", "/thong-tin/")
+ARTICLE_LIST_PAGE_SIZE = 15
+
+
+def _published_articles():
+    return Article.objects.filter(is_published=True, robots_noindex=False).select_related(
+        "category"
+    )
+
 
 HOWTO_STEPS = [
     {
@@ -43,60 +51,41 @@ HOWTO_FAQS = [
 
 
 def info_hub(request):
-    articles = Article.objects.filter(is_published=True, robots_noindex=False).select_related("category")[:8]
+    articles = list(_published_articles()[:20])
+    lead = articles[0] if articles else None
+    secondary = articles[1:5]
+    rest = articles[5:]
     return render(
         request,
         "content/info_hub.html",
         {
-            "articles": articles,
+            "lead": lead,
+            "secondary": secondary,
+            "rest": rest,
             "page_title": "Thông tin Keno",
             "meta_description": "Cách chơi, chơi thử, chơi có trách nhiệm, nội quy cộng đồng và bài viết Keno.",
             "breadcrumbs": [("Trang chủ", "/"), INFO_CRUMB],
-            "hub_cards": [
-                {
-                    "title": "Cách chơi",
-                    "desc": "Hướng dẫn chọn số, mua vé tại điểm bán và đối chiếu kết quả.",
-                    "href": reverse("content:how_to_play"),
-                    "kicker": "Người mới",
-                },
-                {
-                    "title": "Chơi thử",
-                    "desc": "Mô phỏng một kỳ quay. Không dùng tiền thật, không phải mua vé.",
-                    "href": reverse("results:simulator"),
-                    "kicker": "Mô phỏng",
-                },
-                {
-                    "title": "Chơi có trách nhiệm",
-                    "desc": "Keno là giải trí. Không chơi quá khả năng tài chính, không tin cam kết trúng.",
-                    "href": reverse("content:static_page", args=["choi-co-trach-nhiem"]),
-                    "kicker": "An toàn",
-                },
-                {
-                    "title": "Nội quy cộng đồng",
-                    "desc": "Quy tắc thảo luận, kiểm duyệt và câu hỏi lọc thành viên.",
-                    "href": reverse("community:guidelines"),
-                    "kicker": "Cộng đồng",
-                },
-            ],
         },
     )
 
 
 def article_list(request):
-    articles = Article.objects.filter(is_published=True, robots_noindex=False).select_related("category")
+    articles = _published_articles()
     slug = request.GET.get("nhom")
     category = None
     if slug:
         category = get_object_or_404(ArticleCategory, slug=slug)
         articles = articles.filter(category=category)
+    page_obj = Paginator(articles, ARTICLE_LIST_PAGE_SIZE).get_page(request.GET.get("trang"))
     return render(
         request,
         "content/article_list.html",
         {
-            "articles": articles,
+            "articles": page_obj,
+            "page_obj": page_obj,
             "categories": ArticleCategory.objects.all(),
             "category": category,
-            "page_title": "Tin & hướng dẫn Keno",
+            "page_title": "Bài viết Keno",
             "meta_description": "Bài viết về kết quả, cách chơi, thống kê và cộng đồng Keno.",
             "breadcrumbs": [("Trang chủ", "/"), INFO_CRUMB, ("Bài viết", "/bai-viet/")],
         },
@@ -105,10 +94,7 @@ def article_list(request):
 
 def article_detail(request, slug):
     article = get_object_or_404(Article, slug=slug, is_published=True)
-    related = (
-        Article.objects.filter(is_published=True, category=article.category, robots_noindex=False)
-        .exclude(pk=article.pk)[:3]
-    )
+    related = list(_published_articles().exclude(pk=article.pk)[:8])
     faqs = list(article.faqs.all())
     robots = "noindex,follow" if article.robots_noindex else "index,follow"
     canonical = article.canonical_url or article.get_absolute_url()

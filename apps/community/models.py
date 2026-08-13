@@ -91,6 +91,28 @@ class CommunityPost(models.Model):
         return self.title
 
 
+class FacebookPagePost(models.Model):
+    """Cached published Page posts from Graph API — never scraped HTML."""
+
+    fb_id = models.CharField("Facebook post ID", max_length=80, unique=True)
+    message = models.TextField("Nội dung", blank=True)
+    created_time = models.DateTimeField("Đăng lúc", null=True, blank=True)
+    permalink = models.URLField("Permalink", max_length=500, blank=True)
+    is_published = models.BooleanField("Đang công khai", default=True)
+    is_hidden = models.BooleanField("Đã ẩn", default=False)
+    synced_at = models.DateTimeField("Đồng bộ lúc", auto_now=True)
+    last_api_error = models.CharField("Lỗi API gần nhất", max_length=300, blank=True)
+
+    class Meta:
+        verbose_name = "Bài Fanpage (cache)"
+        verbose_name_plural = "Bài Fanpage (cache)"
+        ordering = ["-created_time", "-id"]
+
+    def __str__(self):
+        text = (self.message or "").strip().replace("\n", " ")
+        return (text[:72] + "…") if len(text) > 72 else (text or self.fb_id)
+
+
 class MinigameEvent(models.Model):
     title = models.CharField("Tên hoạt động", max_length=160)
     description = models.TextField("Mô tả")

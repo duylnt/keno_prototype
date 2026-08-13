@@ -3,10 +3,15 @@
 from django.http import HttpRequest
 
 from apps.community.models import CommunityPost
+from apps.locations.models import PayoutRequest
 
 
 def pending_posts_badge(request: HttpRequest) -> int:
     return CommunityPost.objects.filter(status=CommunityPost.STATUS_PENDING).count()
+
+
+def pending_payouts_badge(request: HttpRequest) -> int:
+    return PayoutRequest.objects.filter(status=PayoutRequest.STATUS_PENDING).count()
 
 
 def _path_is(request: HttpRequest, *names: str) -> bool:

@@ -1,0 +1,36 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{{ page_title|default:"Đăng nhập điểm bán" }}</title>
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#ed1b2f">
+  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'img/keno-icon.png' %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Chakra+Petch:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/keno.css' %}">
+  <link rel="stylesheet" href="{% static 'css/partner.css' %}">
+</head>
+<body class="partner-app partner-login-page">
+  <main class="partner-login-card">
+    <img class="brand-logo partner-login-logo" src="{% static 'img/keno-logo.png' %}" alt="Keno">
+    <h1>Đăng nhập điểm bán</h1>
+    {% if error %}<p class="flash flash-error">{{ error }}</p>{% endif %}
+    {% if messages %}
+      {% for message in messages %}
+        <p class="flash flash-{{ message.tags }}">{{ message }}</p>
+      {% endfor %}
+    {% endif %}
+    <form class="form" method="post" action="{% url 'locations:partner_login' %}">
+      {% csrf_token %}
+      <label>Tên đăng nhập <input name="username" autocomplete="username" required></label>
+      <label>Mật khẩu <input type="password" name="password" autocomplete="current-password" required></label>
+      <button class="btn btn-gold btn-block" type="submit">Đăng nhập</button>
+    </form>
+    <p class="fineprint"><a href="{% url 'core:home' %}">← Về trang Keno</a></p>
+  </main>
+</body>
+</html>

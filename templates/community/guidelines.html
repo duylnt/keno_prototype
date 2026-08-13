@@ -1,19 +1,24 @@
 {% extends "base.html" %}
+{% block body_class %}page-info{% endblock %}
 {% block content %}
-<section class="page-head">
-  <h1>Nội quy cộng đồng</h1>
-</section>
+{% include "includes/info_page_hero.html" with info_hero_title="Nội quy cộng đồng" %}
 {% for g in guidelines %}
-  <article class="card prose">
+  <article class="news-nested prose">
     <h2>{{ g.title }}</h2>
     {{ g.body|safe }}
   </article>
 {% endfor %}
-<section class="card">
+<section class="news-nested">
   <h2>Câu hỏi lọc thành viên</h2>
-  <ol class="rank">
+  <ol class="info-steps">
     {% for q in questions %}
-      <li><strong>{{ q.question }}</strong><br><span class="muted">{{ q.hint }}</span></li>
+      <li>
+        <span class="info-step-num" aria-hidden="true">{{ forloop.counter }}</span>
+        <div>
+          <strong>{{ q.question }}</strong>
+          <p class="muted">{{ q.hint }}</p>
+        </div>
+      </li>
     {% endfor %}
   </ol>
   <a class="btn btn-gold" href="{% url 'community:join' %}">Tham gia nhóm</a>

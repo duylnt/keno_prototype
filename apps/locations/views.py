@@ -12,6 +12,7 @@ from apps.analytics.services import track
 from apps.core.models import Banner
 
 from .models import ExperienceCode, PosLocation
+from .services import credit_o2o_commission
 
 
 def _haversine(lat1, lon1, lat2, lon2):
@@ -134,7 +135,8 @@ def redeem(request):
     found = None
     if request.method == "POST":
         raw = (request.POST.get("code") or "").strip().upper()
-        pos_name = (request.POST.get("pos_name") or "").strip()
+        pos_id = request.POST.get("pos_id")
+        pos = PosLocation.objects.filter(pk=pos_id, is_active=True).first()
         found = ExperienceCode.objects.filter(code=raw).first()
         if not found:
             message = "Không tìm thấy mã."
@@ -142,10 +144,14 @@ def redeem(request):
             message = "Mã đã được quét trước đó."
         elif found.is_expired:
             message = "Mã đã hết hạn."
+        elif not pos:
+            message = "Chọn điểm bán để ghi nhận hoa hồng."
         else:
             found.redeemed_at = timezone.now()
-            found.pos_name = pos_name
-            found.save(update_fields=["redeemed_at", "pos_name"])
+            found.pos = pos
+            found.pos_name = pos.name
+            found.save(update_fields=["redeemed_at", "pos", "pos_name"])
+            credit_o2o_commission(found)
             message = "Quét thành công — ghi nhận chuyển đổi digital → POS."
     return render(
         request,
@@ -153,6 +159,7 @@ def redeem(request):
         {
             "message": message,
             "found": found,
+            "locations": PosLocation.objects.filter(is_active=True),
             "page_title": "Quét mã O2O tại POS",
             "seo_robots": "noindex,follow",
         },

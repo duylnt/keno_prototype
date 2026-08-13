@@ -3,7 +3,7 @@
     <h2>Cộng đồng Keno</h2>
     <a class="text-link" href="{% url 'community:hub' %}">Xem tất cả</a>
   </div>
-  <p class="muted">{{ site_settings.facebook_group_name }}</p>
+  <p class="muted">{% if facebook_page_url %}Fanpage cộng đồng Keno{% else %}{{ site_settings.facebook_group_name }}{% endif %}</p>
   <ul class="topic-list">
     {% for post in featured_posts %}
       <li>
@@ -15,5 +15,5 @@
       <li>Chưa có chủ đề nổi bật.</li>
     {% endfor %}
   </ul>
-  <a class="btn btn-gold" href="{% url 'community:join' %}" data-track="community_cta">{{ site_settings.community_cta_label }}</a>
+  <a class="btn btn-gold" href="{% url 'community:join' %}" data-track="community_cta">{% if facebook_page_url %}Mở Fanpage{% else %}{{ site_settings.community_cta_label }}{% endif %}</a>
 </aside>

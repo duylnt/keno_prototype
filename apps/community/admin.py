@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.urls import path
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from unfold.admin import ModelAdmin
@@ -9,9 +10,11 @@ from .models import (
     BannedKeyword,
     CommunityGuideline,
     CommunityPost,
+    FacebookPagePost,
     JoinQuestion,
     MinigameEvent,
 )
+from .views_admin import FanpageModeratePostView, FanpageModerationView, FanpageSyncView
 
 
 @admin.register(CommunityGuideline)
@@ -76,3 +79,47 @@ class CommunityPostAdmin(ModelAdmin):
 class MinigameEventAdmin(ModelAdmin):
     list_display = ("title", "scheduled_at", "participants", "is_published")
     list_filter = ("is_published",)
+
+
+@admin.register(FacebookPagePost)
+class FacebookPagePostAdmin(ModelAdmin):
+    list_display = ("short_message", "created_time", "is_published", "is_hidden", "synced_at")
+    list_filter = ("is_published", "is_hidden")
+    search_fields = ("fb_id", "message")
+    readonly_fields = ("fb_id", "message", "created_time", "permalink", "synced_at", "last_api_error")
+
+    @display(description=_("Nội dung"))
+    def short_message(self, obj):
+        return str(obj)
+
+    def has_add_permission(self, request):
+        return False
+
+
+def _register_fanpage_admin_urls():
+    original = admin.site.get_urls
+
+    def get_urls():
+        extra = [
+            path(
+                "cong-dong/fanpage/",
+                admin.site.admin_view(FanpageModerationView.as_view()),
+                name="community_fanpage",
+            ),
+            path(
+                "cong-dong/fanpage/dong-bo/",
+                admin.site.admin_view(FanpageSyncView.as_view()),
+                name="community_fanpage_sync",
+            ),
+            path(
+                "cong-dong/fanpage/<int:pk>/xu-ly/",
+                admin.site.admin_view(FanpageModeratePostView.as_view()),
+                name="community_fanpage_moderate",
+            ),
+        ]
+        return extra + original()
+
+    admin.site.get_urls = get_urls
+
+
+_register_fanpage_admin_urls()

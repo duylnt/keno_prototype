@@ -19,20 +19,40 @@ class SiteSettings(models.Model):
         "Link Facebook Page",
         blank=True,
         default="",
-        help_text="Nhúng Page Plugin.",
+        help_text="URL Fanpage — nhúng Page Plugin (timeline).",
+    )
+    facebook_page_id = models.CharField(
+        "Facebook Page ID",
+        max_length=64,
+        blank=True,
+        default="",
+        help_text="ID số của Page, dùng Graph API đồng bộ bài viết.",
     )
     facebook_app_id = models.CharField(
         "Facebook App ID",
         max_length=64,
         blank=True,
         default="",
-        help_text="Cho plugin bình luận.",
+        help_text="Cần cho Page Plugin và Comments SDK.",
+    )
+    facebook_page_access_token = models.CharField(
+        "Page Access Token",
+        max_length=512,
+        blank=True,
+        default="",
+        help_text="Bí mật. Không hiện đầy đủ trong CMS. Có thể để trong .env.",
+    )
+    facebook_moderation_roles = models.TextField(
+        "Ghi chú kiểm duyệt Fanpage",
+        blank=True,
+        default="",
+        help_text="Vai trò trên Page (Admin/Editor/Moderator). CMS không thay Facebook Roles.",
     )
     facebook_comments_url = models.URLField(
         "URL bình luận Facebook",
         blank=True,
         default="",
-        help_text="URL trang bình luận.",
+        help_text="Để trống thì dùng URL Fanpage.",
     )
     zalo_group_url = models.URLField(
         "Link nhóm Zalo",
@@ -60,6 +80,35 @@ class SiteSettings(models.Model):
         "Nhãn CTA điểm bán",
         max_length=80,
         default="Tìm điểm bán gần bạn",
+    )
+    COMMISSION_FIXED = "fixed"
+    COMMISSION_PERCENT = "percent"
+    COMMISSION_TYPE_CHOICES = [
+        (COMMISSION_FIXED, "Cố định (VND / lượt quét)"),
+        (COMMISSION_PERCENT, "Phần trăm trên giá trị vé giả định"),
+    ]
+    o2o_commission_type = models.CharField(
+        "Cách tính hoa hồng O2O",
+        max_length=16,
+        choices=COMMISSION_TYPE_CHOICES,
+        default=COMMISSION_FIXED,
+    )
+    o2o_commission_rate = models.DecimalField(
+        "Mức hoa hồng",
+        max_digits=12,
+        decimal_places=2,
+        default=5000,
+        help_text="Cố định: số VND mỗi lượt quét. Phần trăm: ví dụ 5.00 = 5%.",
+    )
+    o2o_commission_base_vnd = models.PositiveIntegerField(
+        "Giá trị vé giả định (VND)",
+        default=10000,
+        help_text="Dùng khi tính hoa hồng theo %.",
+    )
+    wallet_vnd_per_point = models.PositiveIntegerField(
+        "1 điểm thưởng = VND",
+        default=1000,
+        help_text="Tỷ lệ quy đổi ví chủ điểm bán (mô phỏng).",
     )
     updated_at = models.DateTimeField(auto_now=True)
 

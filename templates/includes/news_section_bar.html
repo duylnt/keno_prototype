@@ -1,0 +1,7 @@
+<nav class="news-sections" aria-label="Chuyên mục Thông tin">
+  <a href="{% url 'content:how_to_play' %}"{% if nav_on.info_howto %} class="is-on"{% endif %}>Cách chơi</a>
+  <a href="{% url 'results:simulator' %}"{% if nav_on.info_sim %} class="is-on"{% endif %}>Chơi thử</a>
+  <a href="{% url 'content:static_page' 'choi-co-trach-nhiem' %}"{% if nav_on.info_responsible %} class="is-on"{% endif %}>Trách nhiệm</a>
+  <a href="{% url 'community:guidelines' %}"{% if nav_on.info_guidelines %} class="is-on"{% endif %}>Nội quy</a>
+  <a href="{% url 'content:article_list' %}"{% if nav_on.info_articles %} class="is-on"{% endif %}>Bài viết</a>
+</nav>

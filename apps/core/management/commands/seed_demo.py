@@ -27,7 +27,9 @@ from apps.community.models import (
 )
 from apps.content.models import Article, ArticleCategory, ArticleFAQ, StaticPage
 from apps.core.models import Banner, SiteSettings
+from apps.locations.auth import pos_owner_group
 from apps.locations.models import ExperienceCode, PosLocation
+from apps.locations.services import credit_o2o_commission
 from apps.results.services import ensure_draws_up_to_now
 from apps.seo.crawler import persist_result
 from apps.seo.models import SeoRedirect
@@ -136,16 +138,18 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self._user()
+        # POS owners first so /doi-tac/ login works even if later seed steps fail.
+        self._pos()
         self._settings()
         self._banners()
         self._content()
         self._community()
         created = ensure_draws_up_to_now(lookback_days=3)
         self.stdout.write(f"Kỳ quay mô phỏng: +{created}")
-        self._pos()
         self._analytics()
         self.stdout.write(self.style.SUCCESS("seed_demo hoàn tất."))
         self.stdout.write("CMS: http://127.0.0.1:8000/cms/  |  user=admin  pass=keno-admin-2026")
+        self.stdout.write("Điểm bán: http://127.0.0.1:8000/doi-tac/dang-nhap/  |  user=chudiem  pass=keno-pos-2026")
 
     def _user(self):
         if not User.objects.filter(username="admin").exists():
@@ -161,8 +165,14 @@ class Command(BaseCommand):
         s.facebook_group_url = "https://www.facebook.com/groups/"
         s.facebook_group_name = "Cộng đồng người chơi Keno"
         s.facebook_page_url = s.facebook_page_url or ""
+        s.facebook_page_id = s.facebook_page_id or ""
         s.zalo_group_url = s.zalo_group_url or ""
-        s.community_cta_label = "Tham gia cộng đồng"
+        s.community_cta_label = "Mở Fanpage"
+        s.o2o_commission_type = SiteSettings.COMMISSION_FIXED
+        s.o2o_commission_rate = 5000
+        s.o2o_commission_base_vnd = 10000
+        s.wallet_vnd_per_point = 1000
+        s.facebook_moderation_roles = s.facebook_moderation_roles or "Admin Page duyệt bài; Moderator trả lời inbox."
         s.support_note = "Keno chỉ mua tại điểm bán chính thức."
         s.save()
 
@@ -406,8 +416,27 @@ class Command(BaseCommand):
         )
 
     def _pos(self):
+        group = pos_owner_group()
+        owners = {}
+        password = "keno-pos-2026"
+        specs = (
+            ("chudiem", "Điểm bán Keno Hoàn Kiếm", "chudiem@keno.local"),
+            ("chudiem2", "Điểm bán Keno Quận 1", "chudiem2@keno.local"),
+        )
+        for username, _pos_name, email in specs:
+            user, created = User.objects.get_or_create(username=username)
+            user.email = email
+            user.is_active = True
+            user.is_staff = False
+            user.is_superuser = False
+            user.set_password(password)
+            user.save()
+            user.groups.add(group)
+            owners[username] = user
+            action = "tạo" if created else "cập nhật"
+            self.stdout.write(f"Chủ điểm bán {action}: {username} / {password}")
         for name, addr, dist, city, lat, lng, phone in POS:
-            PosLocation.objects.get_or_create(
+            loc, _ = PosLocation.objects.get_or_create(
                 name=name,
                 defaults={
                     "address": addr,
@@ -418,6 +447,25 @@ class Command(BaseCommand):
                     "phone": phone,
                 },
             )
+            fields = []
+            if not (loc.address or "").strip():
+                loc.address = addr
+                fields.append("address")
+            if not (loc.district or "").strip():
+                loc.district = dist
+                fields.append("district")
+            if not (loc.city or "").strip():
+                loc.city = city
+                fields.append("city")
+            if name == "Điểm bán Keno Hoàn Kiếm" and loc.owner_id != owners["chudiem"].id:
+                loc.owner = owners["chudiem"]
+                fields.append("owner")
+            elif name == "Điểm bán Keno Quận 1" and loc.owner_id != owners["chudiem2"].id:
+                loc.owner = owners["chudiem2"]
+                fields.append("owner")
+            if fields:
+                loc.save(update_fields=fields)
+        self.stdout.write("Chủ điểm bán: chudiem / keno-pos-2026 (Hoàn Kiếm); chudiem2 / keno-pos-2026 (Quận 1)")
 
     def _analytics(self):
         rng = random.Random(42)
@@ -548,19 +596,47 @@ class Command(BaseCommand):
             )
 
     def _seed_o2o(self, rng, now):
-        if ExperienceCode.objects.exists():
-            return
+        pos_by_name = {p.name: p for p in PosLocation.objects.all()}
         pos_names = [p[0] for p in POS]
-        for i in range(28):
-            created = now - timedelta(days=rng.randint(0, 25), hours=rng.randint(0, 20))
-            obj = ExperienceCode.objects.create(
-                code=f"K{1000 + i:04d}{rng.randint(10, 99)}",
-                expires_at=created + timedelta(hours=24),
-                session_key=f"demo-{rng.randint(1, 140)}",
-            )
-            ExperienceCode.objects.filter(pk=obj.pk).update(created_at=created)
-            if rng.random() < 0.38:
-                ExperienceCode.objects.filter(pk=obj.pk).update(
-                    redeemed_at=created + timedelta(hours=rng.randint(1, 12)),
-                    pos_name=rng.choice(pos_names),
+        if not ExperienceCode.objects.exists():
+            for i in range(28):
+                created = now - timedelta(days=rng.randint(0, 25), hours=rng.randint(0, 20))
+                pos = pos_by_name.get(rng.choice(pos_names))
+                obj = ExperienceCode.objects.create(
+                    code=f"K{1000 + i:04d}{rng.randint(10, 99)}",
+                    expires_at=created + timedelta(hours=24),
+                    session_key=f"demo-{rng.randint(1, 140)}",
+                    pos=pos if rng.random() < 0.5 else None,
+                    pos_name=pos.name if pos and rng.random() < 0.5 else "",
                 )
+                ExperienceCode.objects.filter(pk=obj.pk).update(created_at=created)
+                if rng.random() < 0.38 and pos:
+                    ExperienceCode.objects.filter(pk=obj.pk).update(
+                        redeemed_at=created + timedelta(hours=rng.randint(1, 12)),
+                        pos_id=pos.id,
+                        pos_name=pos.name,
+                    )
+        for code in ExperienceCode.objects.filter(redeemed_at__isnull=False, pos__isnull=True):
+            match = pos_by_name.get(code.pos_name)
+            if match:
+                code.pos = match
+                code.save(update_fields=["pos"])
+        from apps.locations.models import PayoutRequest
+
+        credited = 0
+        for code in ExperienceCode.objects.filter(redeemed_at__isnull=False, pos__isnull=False).select_related("pos"):
+            if credit_o2o_commission(code):
+                credited += 1
+        owner = User.objects.filter(username="chudiem").first()
+        if owner and not PayoutRequest.objects.filter(owner=owner).exists():
+            from apps.locations.models import OwnerWallet
+
+            wallet = OwnerWallet.objects.filter(user=owner).first()
+            if wallet and wallet.points_balance >= 5:
+                from apps.locations.services import request_payout
+
+                try:
+                    request_payout(owner, 5)
+                except ValueError:
+                    pass
+        self.stdout.write(f"Hoa hồng O2O đã ghi nhận: {credited}")

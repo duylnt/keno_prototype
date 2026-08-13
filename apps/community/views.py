@@ -3,12 +3,14 @@ from django.shortcuts import redirect, render
 from django.utils import timezone
 
 from apps.analytics.services import track
+from apps.community.facebook import plugin_ready
 from apps.core.models import Banner
 
 from .models import (
     BannedKeyword,
     CommunityGuideline,
     CommunityPost,
+    FacebookPagePost,
     JoinQuestion,
     MinigameEvent,
 )
@@ -28,6 +30,7 @@ def hub(request):
     questions = JoinQuestion.objects.filter(is_active=True)
     events = MinigameEvent.objects.filter(is_published=True, scheduled_at__gte=timezone.now())[:5]
     banners = Banner.objects.filter(is_active=True, placement=Banner.PLACEMENT_COMMUNITY)
+    fb_posts = FacebookPagePost.objects.filter(is_published=True, is_hidden=False)[:12]
     return render(
         request,
         "community/hub.html",
@@ -37,8 +40,10 @@ def hub(request):
             "questions": questions,
             "events": events,
             "banners": banners,
+            "fb_posts": fb_posts,
+            "show_fb_page_plugin": plugin_ready(),
             "page_title": "Cộng đồng Keno",
-            "meta_description": "Không gian thảo luận lành mạnh về Keno: kết quả, kiến thức, dữ liệu và minigame cộng đồng. Không phải kênh chính thức Vietlott.",
+            "meta_description": "Cộng đồng Keno trên Fanpage Facebook: bài viết, thảo luận và nội quy. Không phải kênh chính thức Vietlott.",
             "breadcrumbs": [("Trang chủ", "/"), ("Cộng đồng", "/cong-dong/")],
         },
     )
@@ -105,10 +110,10 @@ def join_intent(request):
 
     site = SiteSettings.load()
     url = _clean_url(
-        site.facebook_group_url,
         site.facebook_page_url,
-        settings.FACEBOOK_GROUP_URL,
+        site.facebook_group_url,
         settings.FACEBOOK_PAGE_URL,
+        settings.FACEBOOK_GROUP_URL,
     )
     if not url:
         return redirect("community:hub")

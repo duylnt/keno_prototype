@@ -1,0 +1,12 @@
+<a class="news-row" href="{{ story.get_absolute_url }}">
+  <span class="news-thumb{% if not story.cover %} news-thumb--empty{% endif %}" aria-hidden="true">
+    {% if story.cover %}
+      <img src="{{ story.cover.url }}" alt="{{ story.cover_alt|default:'' }}" width="120" height="80" loading="lazy">
+    {% endif %}
+  </span>
+  <span class="news-row-copy">
+    {% if story.category %}<span class="news-kicker">{{ story.category.name }}</span>{% endif %}
+    <strong class="news-row-title">{{ story.title }}</strong>
+    <time datetime="{{ story.published_at|date:'Y-m-d\TH:i:s' }}">{{ story.published_at|date:"H:i d/m/Y" }}</time>
+  </span>
+</a>

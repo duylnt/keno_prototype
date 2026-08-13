@@ -1,0 +1,53 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{{ page_title|default:"Cổng đối tác Keno" }}</title>
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#ed1b2f">
+  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'img/keno-icon.png' %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Chakra+Petch:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/keno.css' %}">
+  <link rel="stylesheet" href="{% static 'css/partner.css' %}">
+</head>
+<body class="partner-app">
+  <header class="partner-top">
+    <a class="brand" href="{% url 'locations:partner_dashboard' %}">
+      <img class="brand-logo" src="{% static 'img/keno-logo.png' %}" alt="Keno">
+    </a>
+    <div class="partner-top-meta">
+      {% if primary_pos %}
+        <strong>{{ primary_pos.name }}</strong>
+        {% if primary_pos.formatted_address %}
+          <span class="muted partner-top-addr">{{ primary_pos.formatted_address }}</span>
+        {% endif %}
+        {% if locations|length > 1 %}
+          <span class="muted">+{{ locations|length|add:"-1" }} điểm</span>
+          {% for loc in locations %}
+            {% if not forloop.first and loc.formatted_address %}
+              <span class="muted partner-top-addr">{{ loc.name }} · {{ loc.formatted_address }}</span>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+      {% else %}
+        <strong>Cổng điểm bán</strong>
+      {% endif %}
+      <a href="{% url 'locations:partner_logout' %}">Đăng xuất</a>
+    </div>
+  </header>
+  <main class="partner-shell">
+    {% if messages %}
+      <div class="flash-list">
+        {% for message in messages %}
+          <p class="flash flash-{{ message.tags }}">{{ message }}</p>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

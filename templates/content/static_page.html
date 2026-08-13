@@ -1,7 +1,8 @@
 {% extends "base.html" %}
+{% block body_class %}page-info{% endblock %}
 {% block content %}
-<article class="prose card">
-  <h1>{{ page.title }}</h1>
+{% include "includes/info_page_hero.html" with info_hero_title=page.title %}
+<article class="news-nested prose">
   {% if page.excerpt %}<p class="lede">{{ page.excerpt }}</p>{% endif %}
   {{ page.body|safe }}
 </article>

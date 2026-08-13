@@ -1,15 +1,17 @@
 {% extends "base.html" %}
+{% block body_class %}page-info{% endblock %}
 {% block content %}
-<section class="page-head">
-  <h1>Cách chơi Keno</h1>
-</section>
-<article class="card prose">
+{% include "includes/info_page_hero.html" with info_hero_title="Cách chơi Keno" %}
+<article class="news-nested prose">
   <h2>Các bước chơi</h2>
-  <ol class="howto-steps">
+  <ol class="info-steps">
     {% for step in howto_steps %}
       <li>
-        <strong>{{ step.name }}.</strong>
-        {{ step.text }}
+        <span class="info-step-num" aria-hidden="true">{{ forloop.counter }}</span>
+        <div>
+          <strong>{{ step.name }}</strong>
+          <p>{{ step.text }}</p>
+        </div>
       </li>
     {% endfor %}
   </ol>
@@ -21,7 +23,7 @@
   </div>
 </article>
 {% if faq_items %}
-<section class="card faq-block">
+<section class="news-nested news-faq">
   <h2>Câu hỏi thường gặp</h2>
   <dl class="faq-list">
     {% for f in faq_items %}

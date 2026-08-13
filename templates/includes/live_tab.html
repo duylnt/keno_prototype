@@ -1,21 +1,20 @@
-{% with live_on=request.resolver_match.url_name %}
-<a class="live-tab {{ live_tab_mod }}{% if live_on == 'live_results' or live_on == 'live_results_short' or live_on == 'pos_display' or live_on == 'pos_tv' %} is-active{% endif %}"
+<a class="live-tab {{ live_tab_mod }}{% if nav_on.live %} is-active{% endif %}"
    href="{% url 'core:live_results' %}"
-   aria-label="Live — kết quả trực tiếp"
-   {% if live_on == 'live_results' or live_on == 'live_results_short' or live_on == 'pos_display' or live_on == 'pos_tv' %}aria-current="page"{% endif %}>
+   title="Trực tiếp quay số"
+   aria-label="Trực tiếp quay số"
+   {% if nav_on.live %}aria-current="page"{% endif %}>
   <span class="live-badge" aria-hidden="true">
     <span class="live-badge-pulse"></span>
     <span class="live-badge-pulse live-badge-pulse--late"></span>
     <span class="live-badge-face">
-      <svg class="live-badge-waves" viewBox="0 0 16 10" width="16" height="10" focusable="false">
-        <rect x="1" y="3" width="2.2" height="7" rx="1.1"/>
-        <rect x="5.2" y="0" width="2.2" height="10" rx="1.1"/>
-        <rect x="9.4" y="2" width="2.2" height="8" rx="1.1"/>
-        <rect x="13.6" y="4" width="2.2" height="6" rx="1.1"/>
+      <span class="live-badge-led"></span>
+      <svg class="live-badge-waves" viewBox="0 0 14 10" width="14" height="10" focusable="false">
+        <rect x="0.4" y="3.2" width="2.1" height="6.8" rx="1.05"/>
+        <rect x="4.1" y="0.4" width="2.1" height="9.6" rx="1.05"/>
+        <rect x="7.8" y="1.8" width="2.1" height="8.2" rx="1.05"/>
+        <rect x="11.5" y="4" width="2.1" height="6" rx="1.05"/>
       </svg>
-      <span class="live-badge-word">LIVE</span>
     </span>
   </span>
-  <span class="live-tab-label">Live</span>
+  <span class="live-tab-label">Trực tiếp <span class="live-tab-break">quay số</span></span>
 </a>
-{% endwith %}

@@ -1,26 +1,34 @@
 {% extends "base.html" %}
+{% block body_class %}page-info page-info-news{% endblock %}
 {% block content %}
-<section class="page-head">
-  <h1>Tin & hướng dẫn Keno</h1>
-  <div class="cta-row wrap">
-    <a class="chip-link {% if not category %}is-on{% endif %}" href="{% url 'content:article_list' %}">Tất cả</a>
-    {% for c in categories %}
-      <a class="chip-link {% if category.slug == c.slug %}is-on{% endif %}" href="?nhom={{ c.slug }}">{{ c.name }}</a>
-    {% endfor %}
-  </div>
-</section>
-<div class="article-grid">
+<header class="news-masthead">
+  <h1>Bài viết</h1>
+</header>
+{% include "includes/news_section_bar.html" %}
+{% if categories %}
+<nav class="news-subnav" aria-label="Lọc theo nhóm">
+  <a class="{% if not category %}is-on{% endif %}" href="{% url 'content:article_list' %}">Tất cả</a>
+  {% for c in categories %}
+    <a class="{% if category.slug == c.slug %}is-on{% endif %}" href="?nhom={{ c.slug }}">{{ c.name }}</a>
+  {% endfor %}
+</nav>
+{% endif %}
+<div class="news-list">
   {% for a in articles %}
-    <a class="article-card" href="{{ a.get_absolute_url }}">
-      {% if a.cover %}
-        <img class="article-thumb" src="{{ a.cover.url }}" alt="{{ a.cover_alt|default:a.title }}" width="400" height="220" loading="lazy">
-      {% endif %}
-      <span class="pill">{{ a.category.name }}</span>
-      <h2>{{ a.title }}</h2>
-      <p>{{ a.excerpt }}</p>
-    </a>
+    {% include "includes/news_story_row.html" with story=a %}
   {% empty %}
-    <p>Chưa có bài viết.</p>
+    <p class="news-empty">Chưa có bài</p>
   {% endfor %}
 </div>
+{% if page_obj.has_other_pages %}
+<nav class="news-pager" aria-label="Phân trang">
+  {% if page_obj.has_previous %}
+    <a href="?trang={{ page_obj.previous_page_number }}{% if category %}&amp;nhom={{ category.slug }}{% endif %}">Trước</a>
+  {% endif %}
+  <span>Trang {{ page_obj.number }}/{{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+    <a href="?trang={{ page_obj.next_page_number }}{% if category %}&amp;nhom={{ category.slug }}{% endif %}">Sau</a>
+  {% endif %}
+</nav>
+{% endif %}
 {% endblock %}

@@ -2,8 +2,13 @@
 {% block content %}
 <section class="page-head">
   <h1>Cộng đồng người chơi Keno</h1>
+  <p class="lede">Cộng đồng chính thức trên Facebook Fanpage. Website chỉ nhúng và kiểm duyệt hỗ trợ.</p>
   <div class="cta-row">
-    <a class="btn btn-gold" href="{% url 'community:join' %}" data-track="community_cta">{{ site_settings.community_cta_label }}</a>
+    {% if facebook_page_url %}
+      <a class="btn btn-gold" href="{% url 'community:join' %}" data-track="community_cta">Mở Fanpage</a>
+    {% else %}
+      <a class="btn btn-gold" href="{% url 'community:join' %}" data-track="community_cta">{{ site_settings.community_cta_label }}</a>
+    {% endif %}
     <button type="button" class="btn btn-ghost" data-buy-ticket data-track="find_pos_click">Mua vé</button>
     <a class="btn btn-ghost" href="{% url 'community:guidelines' %}">Nội quy</a>
   </div>
@@ -16,9 +21,29 @@
   </aside>
 {% endfor %}
 
+{% include "includes/facebook_discussion.html" with fb_embed="timeline" discussion_posts=posts %}
+
+{% if fb_posts %}
+<section class="card">
+  <h2>Bài mới trên Fanpage</h2>
+  <ul class="topic-list">
+    {% for post in fb_posts %}
+      <li>
+        <span class="pill">Fanpage</span>
+        <strong>{{ post.message|truncatechars:180|default:"(bài không có caption)" }}</strong>
+        <small>{{ post.created_time|date:"d/m H:i" }}
+          {% if post.permalink %} · <a href="{{ post.permalink }}" target="_blank" rel="noopener">Xem trên Facebook</a>{% endif %}
+        </small>
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
 <section class="grid-2">
   <article class="card">
-    <h2>Chủ đề nổi bật</h2>
+    <h2>{% if show_fb_page_plugin or facebook_page_url %}Góc thảo luận trên website{% else %}Chủ đề nổi bật{% endif %}</h2>
+    <p class="muted">{% if show_fb_page_plugin or facebook_page_url %}Nội dung phụ khi Fanpage chưa nhúng được.{% endif %}</p>
     <ul class="topic-list">
       {% for post in posts %}
         <li>
@@ -27,6 +52,8 @@
           <p>{{ post.body }}</p>
           <small>{{ post.author_name }} · {{ post.comment_count }} trao đổi · {{ post.created_at|date:"d/m H:i" }}</small>
         </li>
+      {% empty %}
+        <li class="muted">Chưa có bài trên website.</li>
       {% endfor %}
     </ul>
   </article>
@@ -51,5 +78,4 @@
     </div>
   </aside>
 </section>
-{% include "includes/facebook_discussion.html" with discussion_posts=posts %}
 {% endblock %}

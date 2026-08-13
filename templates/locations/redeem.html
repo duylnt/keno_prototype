@@ -6,7 +6,14 @@
 <form class="card form" method="post">
   {% csrf_token %}
   <label>Mã trải nghiệm <input name="code" required placeholder="ABCD1234"></label>
-  <label>Tên điểm bán <input name="pos_name" placeholder="Điểm bán Keno Quận 1"></label>
+  <label>Điểm bán
+    <select name="pos_id" required>
+      <option value="">— Chọn điểm bán —</option>
+      {% for loc in locations %}
+        <option value="{{ loc.pk }}">{{ loc.name }} — {{ loc.city }}</option>
+      {% endfor %}
+    </select>
+  </label>
   <button class="btn btn-gold" type="submit">Xác nhận</button>
 </form>
 {% if message %}<p class="flash">{{ message }}</p>{% endif %}

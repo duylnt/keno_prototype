@@ -51,7 +51,9 @@ GSC_SITE_URL = env("GSC_SITE_URL", "https://keno.example.com/")
 GSC_CREDENTIALS_PATH = env("GSC_CREDENTIALS_PATH") or env("GOOGLE_APPLICATION_CREDENTIALS")
 GOOGLE_MAPS_API_KEY = env("GOOGLE_MAPS_API_KEY")
 FACEBOOK_APP_ID = env("FACEBOOK_APP_ID")
+FACEBOOK_PAGE_ID = env("FACEBOOK_PAGE_ID")
 FACEBOOK_PAGE_URL = env("FACEBOOK_PAGE_URL")
+FACEBOOK_PAGE_ACCESS_TOKEN = env("FACEBOOK_PAGE_ACCESS_TOKEN")
 FACEBOOK_GROUP_URL = env("FACEBOOK_GROUP_URL")
 FACEBOOK_COMMENTS_URL = env("FACEBOOK_COMMENTS_URL")
 ZALO_GROUP_URL = env("ZALO_GROUP_URL")
@@ -309,6 +311,16 @@ UNFOLD = {
                         "badge_variant": "warning",
                     },
                     {
+                        "title": _("Kiểm duyệt Fanpage"),
+                        "icon": "campaign",
+                        "link": reverse_lazy("admin:community_fanpage"),
+                    },
+                    {
+                        "title": _("Bài Fanpage (cache)"),
+                        "icon": "rss_feed",
+                        "link": reverse_lazy("admin:community_facebookpagepost_changelist"),
+                    },
+                    {
                         "title": _("Nội quy"),
                         "icon": "gavel",
                         "link": reverse_lazy("admin:community_communityguideline_changelist"),
@@ -361,6 +373,18 @@ UNFOLD = {
                         "title": _("Mã O2O"),
                         "icon": "qr_code_2",
                         "link": reverse_lazy("admin:locations_experiencecode_changelist"),
+                    },
+                    {
+                        "title": _("Hoa hồng O2O"),
+                        "icon": "payments",
+                        "link": reverse_lazy("admin:locations_commissionledger_changelist"),
+                    },
+                    {
+                        "title": _("Yêu cầu quy đổi"),
+                        "icon": "account_balance_wallet",
+                        "link": reverse_lazy("admin:locations_payoutrequest_changelist"),
+                        "badge": "apps.analytics.nav.pending_payouts_badge",
+                        "badge_variant": "warning",
                     },
                 ],
             },

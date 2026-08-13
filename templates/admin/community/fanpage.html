@@ -1,0 +1,93 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="keno-dash">
+  <div class="keno-chrome">
+    <div>
+      <h2>Kiểm duyệt Fanpage</h2>
+      <p class="keno-lead">Cộng đồng chính là Facebook Page. CMS không thay công cụ kiểm duyệt của Facebook.</p>
+    </div>
+  </div>
+
+  <section class="keno-card">
+    <h3>Trạng thái Graph API</h3>
+    <div class="keno-metrics">
+      <div>Page Plugin: <b>{% if fb_status.plugin_ready %}sẵn sàng{% else %}thiếu URL hoặc App ID{% endif %}</b></div>
+      <div>Token: <b>{% if fb_status.token_configured %}{{ fb_status.token_masked }}{% else %}chưa cấu hình{% endif %}</b></div>
+      <div>Page ID: <b>{{ fb_status.page_id|default:"—" }}</b></div>
+      <div>Tên Page: <b>{{ fb_status.page_name|default:"—" }}</b></div>
+      <div>Đọc bài ({{ read_perm }}): <b>
+        {% if fb_status.can_read_posts %}OK{% elif fb_status.can_read_posts == False %}thiếu quyền{% else %}chưa kiểm{% endif %}
+      </b></div>
+      <div>Quản lý bài ({{ manage_perm }}): <b>thử trên từng bài — không giả lập thành công</b></div>
+    </div>
+    {% if fb_status.error %}<p class="keno-note">{{ fb_status.error }}</p>{% endif %}
+    {% if fb_status.hint %}<p class="keno-note">{{ fb_status.hint }}</p>{% endif %}
+    {% if moderation_notes %}<p class="keno-note">Ghi chú vai trò: {{ moderation_notes }}</p>{% endif %}
+    <div class="keno-actions" style="margin-top:12px">
+      <form method="post" action="{% url 'admin:community_fanpage_sync' %}">
+        {% csrf_token %}
+        <button type="submit" class="keno-btn keno-btn-primary">Đồng bộ bài Fanpage</button>
+      </form>
+      <a class="keno-btn" href="{% url 'admin:core_sitesettings_changelist' %}">Cài đặt Fanpage</a>
+      <a class="keno-btn" href="{% url 'admin:community_communitypost_changelist' %}">Duyệt bài trên site ({{ pending_local }} chờ)</a>
+    </div>
+  </section>
+
+  <section class="keno-card">
+    <h3>Mở trên Facebook</h3>
+    {% if fb_links %}
+    <div class="keno-actions">
+      <a class="keno-btn keno-btn-primary" href="{{ fb_links.page }}" target="_blank" rel="noopener">Mở Fanpage</a>
+      <a class="keno-btn" href="{{ fb_links.published }}" target="_blank" rel="noopener">Bài đã đăng</a>
+      <a class="keno-btn" href="{{ fb_links.inbox }}" target="_blank" rel="noopener">Page Inbox</a>
+      <a class="keno-btn" href="{{ fb_links.moderation }}" target="_blank" rel="noopener">Facebook Moderation</a>
+      <a class="keno-btn" href="{{ fb_links.settings }}" target="_blank" rel="noopener">Vai trò Page</a>
+    </div>
+    {% else %}
+    <p class="keno-note">Điền Link Facebook Page trong Cài đặt website.</p>
+    {% endif %}
+  </section>
+
+  <section class="keno-card">
+    <h3>Bài đã cache</h3>
+    {% if fb_posts %}
+    <table class="keno-table">
+      <thead>
+        <tr>
+          <th>Thời gian</th>
+          <th>Nội dung</th>
+          <th>Trạng thái</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for post in fb_posts %}
+        <tr>
+          <td>{{ post.created_time|date:"d/m/Y H:i"|default:"—" }}</td>
+          <td>
+            {{ post.message|truncatechars:160|default:"(không có caption)" }}
+            {% if post.permalink %}<br><a href="{{ post.permalink }}" target="_blank" rel="noopener">Permalink</a>{% endif %}
+            {% if post.last_api_error %}<br><span class="keno-note">{{ post.last_api_error }}</span>{% endif %}
+          </td>
+          <td>
+            {% if post.is_hidden %}Đã ẩn{% elif not post.is_published %}Gỡ đăng{% else %}Công khai{% endif %}
+          </td>
+          <td>
+            <form method="post" action="{% url 'admin:community_fanpage_moderate' post.pk %}" style="display:flex;gap:6px;flex-wrap:wrap">
+              {% csrf_token %}
+              <button class="keno-btn" type="submit" name="action" value="hide">Ẩn</button>
+              <button class="keno-btn" type="submit" name="action" value="unpublish">Gỡ đăng</button>
+              <button class="keno-btn" type="submit" name="action" value="show">Hiện lại</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="keno-note">Chưa có bài cache. Cần Page token + đồng bộ, hoặc dùng liên kết Facebook ở trên.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

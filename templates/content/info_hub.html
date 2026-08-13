@@ -1,44 +1,52 @@
 {% extends "base.html" %}
-{% block body_class %}page-info{% endblock %}
+{% block body_class %}page-info page-info-news{% endblock %}
 {% block content %}
-<section class="page-head">
-  <p class="eyebrow">Thông tin</p>
-  <h1>Hướng dẫn &amp; bài viết Keno</h1>
-  <p class="lede muted">Cách chơi, chơi thử, trách nhiệm, nội quy cộng đồng và các bài viết đã xuất bản.</p>
-</section>
+<header class="news-masthead">
+  <h1>Thông tin</h1>
+</header>
+{% include "includes/news_section_bar.html" %}
 
-<div class="info-hub-grid">
-  {% for card in hub_cards %}
-    <a class="info-hub-card" href="{{ card.href }}">
-      <span class="pill">{{ card.kicker }}</span>
-      <h2>{{ card.title }}</h2>
-      <p>{{ card.desc }}</p>
-      <span class="info-hub-go">Xem →</span>
-    </a>
-  {% endfor %}
+{% if lead %}
+<div class="news-spotlight{% if not secondary %} news-spotlight--solo{% endif %}">
+  <a class="news-lead" href="{{ lead.get_absolute_url }}">
+    {% if lead.cover %}
+      <span class="news-lead-media">
+        <img src="{{ lead.cover.url }}" alt="{{ lead.cover_alt|default:lead.title }}" width="720" height="405" loading="eager">
+      </span>
+    {% endif %}
+    {% if lead.category %}<span class="news-kicker">{{ lead.category.name }}</span>{% endif %}
+    <h2 class="news-lead-title">{{ lead.title }}</h2>
+    {% if lead.excerpt %}<p class="news-dek">{{ lead.excerpt }}</p>{% endif %}
+    <time datetime="{{ lead.published_at|date:'Y-m-d\TH:i:s' }}">{{ lead.published_at|date:"H:i d/m/Y" }}</time>
+  </a>
+  {% if secondary %}
+  <div class="news-secondary" aria-label="Tin nổi bật">
+    {% for a in secondary %}
+      <a class="news-sec" href="{{ a.get_absolute_url }}">
+        {% if a.category %}<span class="news-kicker">{{ a.category.name }}</span>{% endif %}
+        <strong>{{ a.title }}</strong>
+        <time datetime="{{ a.published_at|date:'Y-m-d\TH:i:s' }}">{{ a.published_at|date:"H:i d/m/Y" }}</time>
+      </a>
+    {% endfor %}
+  </div>
+  {% endif %}
 </div>
 
-<section class="info-hub-articles">
-  <div class="section-head">
-    <div>
-      <p class="eyebrow">CMS</p>
-      <h2>Các bài viết khác</h2>
-    </div>
-    <a class="text-link" href="{% url 'content:article_list' %}">Tất cả bài viết →</a>
+{% if rest %}
+<section class="news-more" aria-labelledby="news-more-heading">
+  <div class="news-more-head">
+    <h2 id="news-more-heading">Tin khác</h2>
+    <a class="news-more-all" href="{% url 'content:article_list' %}">Tất cả bài viết</a>
   </div>
-  <div class="article-grid">
-    {% for a in articles %}
-      <a class="article-card" href="{{ a.get_absolute_url }}">
-        {% if a.cover %}
-          <img class="article-thumb" src="{{ a.cover.url }}" alt="{{ a.cover_alt|default:a.title }}" width="400" height="220" loading="lazy">
-        {% endif %}
-        <span class="pill">{{ a.category.name }}</span>
-        <h3>{{ a.title }}</h3>
-        <p>{{ a.excerpt }}</p>
-      </a>
-    {% empty %}
-      <p class="muted">Chưa có bài viết. <a href="{% url 'content:article_list' %}">Xem trang bài viết</a>.</p>
+  <div class="news-list">
+    {% for a in rest %}
+      {% include "includes/news_story_row.html" with story=a %}
     {% endfor %}
   </div>
 </section>
+{% endif %}
+
+{% else %}
+<p class="news-empty">Chưa có bài</p>
+{% endif %}
 {% endblock %}

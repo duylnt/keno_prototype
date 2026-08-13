@@ -3,6 +3,7 @@ from django.urls import reverse
 
 from apps.community.models import CommunityPost
 from apps.core.models import Banner, SiteSettings
+from apps.core.nav import nav_on
 from apps.results.services import countdown_seconds, latest_draw, next_draw_at
 
 _FB_PLACEHOLDERS = {
@@ -24,6 +25,8 @@ def _clean_url(*candidates):
 
 def site_chrome(request):
     site = SiteSettings.load()
+    # Never expose the Page token to templates (public or CMS chrome).
+    site.facebook_page_access_token = ""
     featured = CommunityPost.objects.filter(
         status=CommunityPost.STATUS_APPROVED, is_featured=True
     )[:4]
@@ -33,10 +36,11 @@ def site_chrome(request):
     facebook_comments_url = _clean_url(
         site.facebook_comments_url,
         settings.FACEBOOK_COMMENTS_URL,
+        facebook_page_url,
         f"{settings.SITE_URL}{reverse('core:live_results')}",
     )
     zalo_group_url = _clean_url(site.zalo_group_url, settings.ZALO_GROUP_URL)
-    facebook_open_url = facebook_group_url or facebook_page_url
+    facebook_open_url = facebook_page_url or facebook_group_url
     return {
         "site_settings": site,
         "ga4_id": site.ga4_measurement_id or settings.GA4_MEASUREMENT_ID,
@@ -54,4 +58,5 @@ def site_chrome(request):
         "zalo_group_url": zalo_group_url,
         "buy_ticket_gps_url": reverse("locations:finder") + "?gps=1",
         "load_fb_sdk": bool(facebook_app_id or facebook_page_url),
+        "nav_on": nav_on(request),
     }

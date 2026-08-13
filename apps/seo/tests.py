@@ -53,6 +53,7 @@ class SeoPublicTests(TestCase):
         text = r.content.decode()
         self.assertIn("không phải website chính thức", text.lower())
         self.assertIn("/ket-qua/", text)
+        self.assertIn("/thong-tin/", text)
         self.assertIn("vietlott", text.lower())
 
     def test_llms_full_and_wellknown(self):
@@ -73,6 +74,9 @@ class SeoPublicTests(TestCase):
         self.assertEqual(articles.status_code, 200)
         self.assertIn("keno-la-gi", articles.content.decode())
         self.assertIn("lastmod", articles.content.decode())
+        pages = self.client.get("/sitemap-pages.xml")
+        self.assertEqual(pages.status_code, 200)
+        self.assertIn("/thong-tin/", pages.content.decode())
 
     def test_canonical_strips_querystring(self):
         r = self.client.get("/thong-ke/?n=30")

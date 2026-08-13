@@ -1,61 +1,64 @@
 {% extends "base.html" %}
+{% block body_class %}page-info page-info-news{% endblock %}
 {% block content %}
-<article class="prose card article-body">
-  <p class="eyebrow">{{ article.category.name }}</p>
-  <h1>{{ article.title }}</h1>
-  <p class="article-meta muted">
-    {% if article.author_name %}{{ article.author_name }} · {% endif %}
-    Đăng {{ article.published_at|date:"d/m/Y" }}
-    · Cập nhật {{ article.updated_at|date:"d/m/Y" }}
-  </p>
-  {% if article.cover %}
-    <p class="article-cover">
-      <img src="{{ article.cover.url }}" alt="{{ article.cover_alt|default:article.title }}" width="800" height="420" loading="lazy">
+{% include "includes/news_section_bar.html" %}
+<div class="news-article-layout">
+  <article class="news-article">
+    {% if article.category %}<p class="news-kicker">{{ article.category.name }}</p>{% endif %}
+    <h1>{{ article.title }}</h1>
+    <p class="news-byline">
+      {% if article.author_name %}<span>{{ article.author_name }}</span>{% endif %}
+      <time datetime="{{ article.published_at|date:'Y-m-d\TH:i:s' }}">{{ article.published_at|date:"H:i d/m/Y" }}</time>
+      {% if article.updated_at.date != article.published_at.date %}
+        <span class="news-updated">Cập nhật {{ article.updated_at|date:"H:i d/m/Y" }}</span>
+      {% endif %}
     </p>
-  {% endif %}
-  {% if article.excerpt %}
-    <p class="lede">{{ article.excerpt }}</p>
-  {% endif %}
-  {% if article.takeaway_list %}
-    <section class="takeaways" aria-label="Ý chính">
-      <h2>Ý chính</h2>
-      <ul>
-        {% for item in article.takeaway_list %}
-          <li>{{ item }}</li>
+    {% if article.cover %}
+      <p class="news-cover">
+        <img src="{{ article.cover.url }}" alt="{{ article.cover_alt|default:article.title }}" width="800" height="420" loading="eager">
+      </p>
+    {% endif %}
+    {% if article.excerpt %}
+      <p class="news-dek news-dek--article">{{ article.excerpt }}</p>
+    {% endif %}
+    {% if article.takeaway_list %}
+      <section class="takeaways" aria-label="Ý chính">
+        <h2>Ý chính</h2>
+        <ul>
+          {% for item in article.takeaway_list %}
+            <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+      </section>
+    {% endif %}
+    <div class="news-body prose">
+      {{ article.body|safe }}
+    </div>
+    {% if article_faqs %}
+    <section class="news-faq" aria-label="Câu hỏi thường gặp">
+      <h2>Câu hỏi thường gặp</h2>
+      <dl class="faq-list">
+        {% for f in article_faqs %}
+          <dt>{{ f.question }}</dt>
+          <dd>{{ f.answer }}</dd>
         {% endfor %}
-      </ul>
+      </dl>
     </section>
+    {% endif %}
+  </article>
+  {% if related %}
+  <aside class="news-rail" aria-labelledby="news-rail-heading">
+    <h2 id="news-rail-heading">Tin khác</h2>
+    <div class="news-rail-list">
+      {% for a in related %}
+        <a class="news-sec" href="{{ a.get_absolute_url }}">
+          {% if a.category %}<span class="news-kicker">{{ a.category.name }}</span>{% endif %}
+          <strong>{{ a.title }}</strong>
+          <time datetime="{{ a.published_at|date:'Y-m-d\TH:i:s' }}">{{ a.published_at|date:"H:i d/m/Y" }}</time>
+        </a>
+      {% endfor %}
+    </div>
+  </aside>
   {% endif %}
-  {{ article.body|safe }}
-</article>
-{% if article_faqs %}
-<section class="card faq-block" aria-label="Câu hỏi thường gặp">
-  <h2>Câu hỏi thường gặp</h2>
-  <dl class="faq-list">
-    {% for f in article_faqs %}
-      <dt>{{ f.question }}</dt>
-      <dd>{{ f.answer }}</dd>
-    {% endfor %}
-  </dl>
-</section>
-{% endif %}
-<section class="card">
-  <h2>Liên kết hữu ích</h2>
-  <ul class="feature-list">
-    <li><a href="{% url 'content:how_to_play' %}">Cách chơi Keno</a></li>
-    <li><a href="{% url 'results:live' %}">Kết quả kỳ mới nhất</a></li>
-    <li><a href="{% url 'results:stats' %}">Thống kê Lớn/Nhỏ · Chẵn/Lẻ</a></li>
-    <li><a href="{% url 'locations:finder' %}">Tìm điểm bán gần bạn</a></li>
-  </ul>
-</section>
-{% if related %}
-<section>
-  <h2>Bài liên quan</h2>
-  <div class="article-grid">
-    {% for a in related %}
-      <a class="article-card" href="{{ a.get_absolute_url }}"><h3>{{ a.title }}</h3><p>{{ a.excerpt }}</p></a>
-    {% endfor %}
-  </div>
-</section>
-{% endif %}
+</div>
 {% endblock %}

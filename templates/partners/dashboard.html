@@ -1,0 +1,97 @@
+{% extends "partners/base.html" %}
+{% load money %}
+{% block content %}
+<section class="page-head">
+  <h1>Tổng quan điểm bán</h1>
+  <p class="muted">Hoa hồng khi mã O2O được quét tại cửa hàng của bạn.</p>
+</section>
+
+<div class="partner-kpis">
+  <article class="card partner-kpi">
+    <span class="partner-kpi-label">Hoa hồng tháng</span>
+    <strong class="partner-kpi-value">{{ month_vnd|vnd }}</strong>
+    <em class="partner-kpi-meta">
+      <span class="partner-kpi-chip">7 ngày: {{ week_vnd|vnd }}</span>
+      <span class="partner-kpi-chip">tổng: {{ total_vnd|vnd }}</span>
+    </em>
+  </article>
+  <article class="card partner-kpi">
+    <span class="partner-kpi-label">Điểm ví</span>
+    <strong class="partner-kpi-value">{{ wallet.points_balance }}</strong>
+    <em class="partner-kpi-meta">
+      <span class="partner-kpi-chip">≈ {{ wallet_vnd|vnd }}</span>
+      <span class="partner-kpi-chip">1 điểm = {{ vnd_per_point|vnd }}</span>
+    </em>
+  </article>
+  <article class="card partner-kpi">
+    <span class="partner-kpi-label">Lượt redeem</span>
+    <strong class="partner-kpi-value">{{ month_redeems }}</strong>
+    <em class="partner-kpi-meta">Trong tháng này tại điểm của bạn</em>
+  </article>
+</div>
+
+<nav class="stat-pills" aria-label="Lọc thời gian">
+  <a href="?days=7" class="{% if days == 7 %}chip-link is-on{% endif %} chip chip-link">7 ngày</a>
+  <a href="?days=30" class="{% if days == 30 %}chip-link is-on{% endif %} chip chip-link">30 ngày</a>
+  <a href="?days=90" class="{% if days == 90 %}chip-link is-on{% endif %} chip chip-link">90 ngày</a>
+</nav>
+
+<section class="card">
+  <h2>Mã đã quét tại cửa hàng</h2>
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr>
+          <th>Ngày</th>
+          <th>Mã</th>
+          <th>Hoa hồng</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in redeems %}
+        <tr>
+          <td>{{ row.redeemed_at|date:"d/m/Y H:i" }}</td>
+          <td class="nums">{{ row.masked_code }}</td>
+          <td class="nums">{% if row.commission %}{{ row.commission.amount_vnd|vnd }}{% else %}—{% endif %}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3" class="muted">Chưa có lượt quét trong kỳ lọc.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Ví điểm thưởng</h2>
+  <form class="form partner-payout" method="post" action="{% url 'locations:partner_payout' %}">
+    {% csrf_token %}
+    <label>Quy đổi (điểm)
+      <input type="number" name="points" min="1" max="{{ wallet.points_balance }}" value="{{ wallet.points_balance }}" required>
+    </label>
+    <button class="btn btn-gold" type="submit" {% if wallet.points_balance < 1 %}disabled{% endif %}>Gửi yêu cầu quy đổi</button>
+  </form>
+  <h3>Lịch sử ví</h3>
+  <ul class="topic-list">
+    {% for tx in transactions %}
+      <li>
+        <strong>{{ tx.get_kind_display }} · {% if tx.points > 0 %}+{% endif %}{{ tx.points }} điểm</strong>
+        <small>{{ tx.created_at|date:"d/m H:i" }} · {{ tx.note }}</small>
+      </li>
+    {% empty %}
+      <li class="muted">Chưa có biến động.</li>
+    {% endfor %}
+  </ul>
+  {% if payouts %}
+  <h3>Yêu cầu quy đổi</h3>
+  <ul class="topic-list">
+    {% for p in payouts %}
+      <li>
+        <strong>{{ p.points }} điểm · {{ p.amount_vnd|vnd }}</strong>
+        <small>{{ p.get_status_display }} · {{ p.created_at|date:"d/m H:i" }}</small>
+      </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</section>
+{% endblock %}
