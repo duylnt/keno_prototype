@@ -105,6 +105,12 @@
   const picker = document.getElementById("picker");
   if (picker) {
     const selected = new Set();
+    const pickedInput = document.getElementById("picked-numbers");
+    const pickCount = document.getElementById("pick-count");
+    function syncPicked() {
+      if (pickedInput) pickedInput.value = Array.from(selected).join(",");
+      if (pickCount) pickCount.textContent = "Đã chọn " + selected.size + " số";
+    }
     for (let i = 1; i <= 80; i++) {
       const b = document.createElement("button");
       b.type = "button";
@@ -113,7 +119,7 @@
         if (selected.has(i)) selected.delete(i);
         else if (selected.size < 10) selected.add(i);
         b.classList.toggle("on", selected.has(i));
-        document.getElementById("pick-count").textContent = "Đã chọn " + selected.size + " số";
+        syncPicked();
       });
       picker.appendChild(b);
     }
@@ -127,26 +133,223 @@
         selected.add(n);
         picker.children[n - 1].classList.add("on");
       }
-      document.getElementById("pick-count").textContent = "Đã chọn " + selected.size + " số";
+      syncPicked();
     });
-    document.getElementById("play-sim").addEventListener("click", () => {
-      const body = JSON.stringify({ numbers: Array.from(selected) });
+    function prizeBlock(item, kicker) {
+      if (!item) return "";
+      const state = item.won ? "is-win" : "is-miss";
+      return (
+        '<article class="sim-prize-item ' +
+        state +
+        '"><p class="sim-prize-kicker">' +
+        kicker +
+        "</p><p class=\"sim-prize-status\">" +
+        (item.headline || "") +
+        "</p><p class=\"sim-prize-kind\">" +
+        (item.name || "") +
+        "</p><p class=\"sim-prize-amount\">" +
+        (item.amount_label || "0 ₫") +
+        "</p><p class=\"sim-prize-detail\">" +
+        (item.detail || "") +
+        "</p></article>"
+      );
+    }
+    function highlightPrizeCell(pick, match) {
+      document.querySelectorAll(".sim-prize-table td.is-hit").forEach((td) => td.classList.remove("is-hit"));
+      if (!pick) return;
+      const td = document.querySelector(
+        '.sim-prize-table td[data-pick="' + pick + '"][data-match="' + match + '"]'
+      );
+      if (td) td.classList.add("is-hit");
+    }
+    function renderSimPrize(prize) {
+      const box = document.getElementById("sim-prize");
+      if (!box) return;
+      const basic = prize.basic || {};
+      box.innerHTML =
+        prizeBlock(basic, "Giải của bạn") +
+        '<div class="sim-prize-sides">' +
+        prizeBlock(prize.size, "Cửa kỳ này") +
+        prizeBlock(prize.parity, "Cửa kỳ này") +
+        "</div>" +
+        '<p class="muted">' +
+        (prize.note || "Mô phỏng trên Chơi thử — không chi trả tiền thật.") +
+        "</p>";
+      highlightPrizeCell(basic.pick_count, basic.match_count);
+      const lead = document.getElementById("sim-prize-notice-lead");
+      if (lead) lead.textContent = prize.notice_lead || "";
+      const heading = document.getElementById("sim-prize-notice-title");
+      if (heading) heading.textContent = prize.notice_title || "Kết quả kỳ quay vừa rồi";
+    }
+    const prizeDialog = document.getElementById("sim-prize-dialog");
+    const prizeNotice = document.getElementById("sim-prize-notice");
+    let revealPrizeNotice = true;
+    let prizeBackdrop = document.getElementById("sim-prize-backdrop");
+    if (prizeDialog && prizeDialog.parentElement !== document.body) {
+      document.body.appendChild(prizeDialog);
+    }
+    function ensurePrizeBackdrop() {
+      if (prizeBackdrop) return prizeBackdrop;
+      prizeBackdrop = document.createElement("div");
+      prizeBackdrop.id = "sim-prize-backdrop";
+      prizeBackdrop.className = "sim-prize-backdrop";
+      prizeBackdrop.hidden = true;
+      prizeBackdrop.addEventListener("click", () => closePrizeDialog());
+      document.body.appendChild(prizeBackdrop);
+      return prizeBackdrop;
+    }
+    function fillPrizeDialog(prize) {
+      if (!prizeDialog) return;
+      const title = document.getElementById("sim-prize-dialog-title");
+      const body = document.getElementById("sim-prize-dialog-body");
+      const note = document.getElementById("sim-prize-dialog-note");
+      const won = !!prize.won;
+      prizeDialog.classList.toggle("is-win", won && !prize.loading);
+      prizeDialog.classList.toggle("is-lose", !won && !prize.loading);
+      if (title) {
+        title.textContent = prize.popup_title || (won ? "Chúc mừng bạn đã thắng" : "Chúc may mắn lần sau");
+      }
+      if (body) {
+        body.textContent = prize.popup_body || "";
+        body.hidden = !prize.popup_body;
+      }
+      if (note) note.textContent = prize.note || "Mô phỏng trên Chơi thử — không chi trả tiền thật.";
+    }
+    function forcePrizeDialogVisible() {
+      if (!prizeDialog) return;
+      prizeDialog.setAttribute("open", "");
+      prizeDialog.classList.add("is-fallback");
+      const backdrop = ensurePrizeBackdrop();
+      backdrop.hidden = false;
+      document.body.classList.add("sim-prize-modal-open");
+    }
+    function closePrizeDialog() {
+      if (!prizeDialog) return;
+      if (prizeDialog.open && typeof prizeDialog.close === "function") {
+        try {
+          prizeDialog.close();
+          return;
+        } catch (e) {}
+      }
+      prizeDialog.removeAttribute("open");
+      prizeDialog.classList.remove("is-fallback");
+      if (prizeBackdrop) prizeBackdrop.hidden = true;
+      document.body.classList.remove("sim-prize-modal-open");
+      if (revealPrizeNotice && prizeNotice) prizeNotice.hidden = false;
+    }
+    function openPrizeDialog(prize) {
+      if (prizeNotice) prizeNotice.hidden = true;
+      if (!prize.loading) renderSimPrize(prize);
+      fillPrizeDialog(prize);
+      if (!prizeDialog) {
+        if (prizeNotice) prizeNotice.hidden = false;
+        return;
+      }
+      if (prizeDialog.open) return;
+      revealPrizeNotice = true;
+      let opened = false;
+      if (typeof prizeDialog.showModal === "function") {
+        try {
+          prizeDialog.showModal();
+          opened = window.getComputedStyle(prizeDialog).display !== "none";
+        } catch (e) {
+          opened = false;
+        }
+      }
+      if (!opened) forcePrizeDialogVisible();
+      if (!prize.loading && prizeNotice && window.getComputedStyle(prizeDialog).display === "none") {
+        prizeNotice.hidden = false;
+      }
+    }
+    if (prizeDialog) {
+      prizeDialog.addEventListener("click", (ev) => {
+        if (ev.target === prizeDialog) closePrizeDialog();
+      });
+      prizeDialog.addEventListener("close", () => {
+        prizeDialog.classList.remove("is-fallback");
+        if (prizeBackdrop) prizeBackdrop.hidden = true;
+        document.body.classList.remove("sim-prize-modal-open");
+        if (revealPrizeNotice && prizeNotice) prizeNotice.hidden = false;
+      });
+    }
+    document.addEventListener("keydown", (ev) => {
+      if (ev.key === "Escape" && prizeDialog && prizeDialog.classList.contains("is-fallback")) {
+        closePrizeDialog();
+      }
+    });
+    function paintSimResult(data) {
+      const box = document.getElementById("sim-result");
+      if (box) box.hidden = false;
+      const balls = document.getElementById("sim-balls");
+      if (balls && data.drawn) {
+        balls.innerHTML = data.drawn
+          .map((n) => `<li class="${(data.matched || []).includes(n) ? "is-hit" : ""}">${pad(n)}</li>`)
+          .join("");
+      }
+      const summary = document.getElementById("sim-summary");
+      if (summary) {
+        summary.textContent =
+          data.summary ||
+          "Trùng " + data.match_count + " số · Tổng " + data.total + " · " + data.size_label + " · " + data.parity_label;
+      }
+    }
+    function restorePicks(numbers) {
+      if (!numbers || !numbers.length) return;
+      selected.clear();
+      picker.querySelectorAll("button").forEach((x) => x.classList.remove("on"));
+      numbers.forEach((n) => {
+        const num = Number(n);
+        if (num >= 1 && num <= 80) {
+          selected.add(num);
+          picker.children[num - 1].classList.add("on");
+        }
+      });
+      syncPicked();
+    }
+    const simForm = document.getElementById("sim-form");
+    function playSim(ev) {
+      if (ev) ev.preventDefault();
+      syncPicked();
+      openPrizeDialog({
+        loading: true,
+        popup_title: "Đang quay thử…",
+        popup_body: "",
+        note: "Mô phỏng trên Chơi thử — không chi trả tiền thật.",
+      });
       fetch("/api/simulator/", {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-CSRFToken": cfg.csrf || "" },
-        body,
+        credentials: "same-origin",
+        body: JSON.stringify({ numbers: Array.from(selected) }),
       })
-        .then((r) => r.json())
+        .then((r) => {
+          if (!r.ok) throw new Error("simulator");
+          return r.json();
+        })
         .then((data) => {
-          const box = document.getElementById("sim-result");
-          box.hidden = false;
-          document.getElementById("sim-balls").innerHTML = data.drawn
-            .map((n) => `<li class="${(data.matched || []).includes(n) ? "is-hit" : ""}">${pad(n)}</li>`)
-            .join("");
-          document.getElementById("sim-summary").textContent =
-            "Trùng " + data.match_count + " số · Tổng " + data.total + " · " + data.size_label + " · " + data.parity_label;
+          paintSimResult(data);
+          fillPrizeDialog(data.prize || {});
+          renderSimPrize(data.prize || {});
+          if (prizeDialog && !prizeDialog.open) openPrizeDialog(data.prize || {});
+        })
+        .catch(() => {
+          if (simForm) {
+            simForm.removeEventListener("submit", playSim);
+            simForm.submit();
+          }
         });
-    });
+    }
+    if (simForm) simForm.addEventListener("submit", playSim);
+    else document.getElementById("play-sim").addEventListener("click", playSim);
+    const bootEl = document.getElementById("sim-play-boot");
+    if (bootEl) {
+      try {
+        const boot = JSON.parse(bootEl.textContent);
+        restorePicks(boot.picked);
+        paintSimResult(boot);
+        openPrizeDialog(boot.prize || {});
+      } catch (e) {}
+    }
   }
 
   function chartDefaults() {

@@ -9,6 +9,7 @@ from django.views.decorators.http import require_GET, require_POST
 from apps.analytics.services import track
 
 from .models import Draw
+from .prizes import SIDE_PRIZE_ROWS, STAKE_VND, basic_table_view, evaluate_sim, format_vnd
 from .services import (
     check_ticket,
     countdown_seconds,
@@ -205,13 +206,102 @@ def check_ticket_view(request):
     )
 
 
+SIM_HOWTO_STEPS = [
+    {
+        "name": "Chọn số",
+        "text": "Chọn 1–10 số trên bảng 01–80, hoặc bấm Chọn ngẫu nhiên. Đây là cách chơi cơ bản trên màn hình này.",
+    },
+    {
+        "name": "Quay thử",
+        "text": "Bấm Quay thử để mô phỏng một kỳ: hệ thống lấy 20 số từ 01–80.",
+    },
+    {
+        "name": "Đối chiếu kết quả",
+        "text": "Số trùng được tô nổi. Cửa sổ thông báo hiện ngay: chúc mừng nếu trúng, hoặc chúc may mắn lần sau. Sau khi đóng cửa sổ, khu vực Kết quả kỳ quay vừa rồi giữ giải cơ bản (bậc + số trùng) và mức thưởng mô phỏng.",
+    },
+    {
+        "name": "Hiểu ba cách chơi",
+        "text": "Keno có cách chơi cơ bản (chọn số), Lớn/Nhỏ và Chẵn/Lẻ. Kỳ mô phỏng đối chiếu giải cơ bản theo số bạn chọn; cửa Lớn/Nhỏ và Chẵn/Lẻ của kỳ cũng hiện trên bảng thưởng.",
+    },
+]
+
+SIM_PLAY_TYPES = [
+    {
+        "name": "Cách chơi cơ bản",
+        "text": "Chọn 1–10 số trong dải 01–80 (bậc 1 đến bậc 10). Kỳ quay ra 20 số. Bậc bạn chơi và số trùng quyết định giải. Bậc 8, 9 và 10 vẫn có giải 10.000 ₫ khi không trùng số nào.",
+    },
+    {
+        "name": "Lớn / Nhỏ",
+        "text": "Giải thưởng cửa này theo số lượng: Lớn khi có từ 13 số trong 41–80, Nhỏ khi có từ 13 số trong 01–40. Dòng tóm tắt Tổng vẫn ghi Nhỏ 210–810 / Lớn 811–1410.",
+    },
+    {
+        "name": "Chẵn / Lẻ",
+        "text": "Giải thưởng cửa này khi có 13–14 hoặc từ 15 số chẵn (hoặc lẻ). Dòng tóm tắt vẫn ghi Chẵn ≥11, Lẻ ≥11, Hòa 10–10.",
+    },
+]
+
+
+def _parse_picked(request) -> list[int]:
+    raw = request.POST.get("numbers")
+    if raw in (None, "") and request.body:
+        try:
+            payload = json.loads(request.body.decode() or "{}")
+            values = payload.get("numbers", [])
+        except (json.JSONDecodeError, ValueError, UnicodeDecodeError):
+            values = []
+    else:
+        values = str(raw or "").replace(",", " ").split()
+    picked: list[int] = []
+    for item in values:
+        try:
+            n = int(item)
+        except (TypeError, ValueError):
+            continue
+        if 1 <= n <= 80 and n not in picked:
+            picked.append(n)
+        if len(picked) == 10:
+            break
+    return picked
+
+
+def _simulate_play(request, picked: list[int]) -> dict:
+    from .services import attributes_for, generate_numbers
+
+    drawn = generate_numbers()
+    attrs = attributes_for(drawn)
+    matched = sorted(set(picked) & set(drawn))
+    prize = evaluate_sim(picked, drawn)
+    track(request, "simulator_play", metadata={"picks": len(picked), "matches": len(matched)})
+    size_label = "Lớn" if attrs["size"] == "big" else "Nhỏ"
+    parity_label = {"even": "Chẵn", "odd": "Lẻ", "draw": "Hòa"}.get(attrs["parity"])
+    return {
+        "drawn": drawn,
+        "picked": picked,
+        "matched": matched,
+        "match_count": len(matched),
+        **attrs,
+        "size_label": size_label,
+        "parity_label": parity_label,
+        "summary": f"Trùng {len(matched)} số · Tổng {attrs['total']} · {size_label} · {parity_label}",
+        "prize": prize,
+    }
+
+
 def simulator(request):
+    sim_play = _simulate_play(request, _parse_picked(request)) if request.method == "POST" else None
     return render(
         request,
         "results/simulator.html",
         {
             "page_title": "Chơi thử Keno",
-            "meta_description": "Chơi thử Keno: chọn số rồi quay một kỳ mô phỏng.",
+            "meta_description": "Chơi thử Keno: chọn số, quay một kỳ mô phỏng và xem cách đối chiếu số trùng, Lớn/Nhỏ, Chẵn/Lẻ.",
+            "howto_steps": SIM_HOWTO_STEPS,
+            "howto_name": "Cách chơi Keno trên Chơi thử",
+            "sim_play_types": SIM_PLAY_TYPES,
+            "prize_table": basic_table_view(),
+            "side_prizes": SIDE_PRIZE_ROWS,
+            "stake_label": format_vnd(STAKE_VND),
+            "sim_play": sim_play,
             "breadcrumbs": [
                 ("Trang chủ", "/"),
                 ("Thông tin", "/thong-tin/"),
@@ -223,36 +313,7 @@ def simulator(request):
 
 @require_POST
 def simulator_play(request):
-    raw = request.POST.get("numbers") or request.body
-    if isinstance(raw, bytes):
-        try:
-            payload = json.loads(raw.decode() or "{}")
-            picked = [int(n) for n in payload.get("numbers", [])]
-        except (json.JSONDecodeError, ValueError):
-            picked = []
-    else:
-        try:
-            picked = sorted({int(x) for x in raw.replace(",", " ").split() if x.strip()})
-        except ValueError:
-            picked = []
-    picked = [n for n in picked if 1 <= n <= 80][:10]
-    from .services import attributes_for, generate_numbers
-
-    drawn = generate_numbers()
-    attrs = attributes_for(drawn)
-    matched = sorted(set(picked) & set(drawn))
-    track(request, "simulator_play", metadata={"picks": len(picked), "matches": len(matched)})
-    return JsonResponse(
-        {
-            "drawn": drawn,
-            "picked": picked,
-            "matched": matched,
-            "match_count": len(matched),
-            **attrs,
-            "size_label": "Lớn" if attrs["size"] == "big" else "Nhỏ",
-            "parity_label": {"even": "Chẵn", "odd": "Lẻ", "draw": "Hòa"}.get(attrs["parity"]),
-        }
-    )
+    return JsonResponse(_simulate_play(request, _parse_picked(request)))
 
 
 @require_GET

@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from apps.results.models import Draw
+from apps.results.prizes import basic_amount, evaluate_basic, evaluate_parity, evaluate_sim, evaluate_size
 from apps.results.services import (
     attributes_for,
     consecutive_streaks,
@@ -61,6 +62,71 @@ class PublicViewTests(TestCase):
     def test_stats_ok(self):
         r = self.client.get(reverse("results:stats"))
         self.assertEqual(r.status_code, 200)
+
+    def test_simulator_has_howto(self):
+        r = self.client.get(reverse("results:simulator"))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "Cách chơi Keno")
+        self.assertContains(r, "Cách chơi cơ bản")
+        self.assertContains(r, "Lớn / Nhỏ")
+        self.assertContains(r, "Chẵn / Lẻ")
+        self.assertContains(r, "210–810")
+        self.assertContains(r, "811–1410")
+        self.assertContains(r, "không dùng tiền thật")
+        self.assertContains(r, reverse("content:how_to_play"))
+        self.assertContains(r, 'id="cach-choi"')
+        self.assertContains(r, 'id="bang-thuong"')
+        self.assertContains(r, "Bảng thưởng mô phỏng")
+        self.assertContains(r, "2.000.000.000 ₫")
+        self.assertContains(r, "20.000 ₫")
+        self.assertContains(r, "56.000 ₫")
+        self.assertContains(r, "210.000 ₫")
+        self.assertContains(r, 'id="sim-prize"')
+        self.assertContains(r, 'id="sim-prize-dialog"')
+        self.assertContains(r, 'id="sim-prize-notice"')
+        self.assertContains(r, 'id="sim-form"')
+        self.assertNotContains(r, 'id="sim-play-boot"')
+        self.assertContains(r, "keno.js")
+        self.assertContains(r, "Kết quả kỳ quay vừa rồi")
+        self.assertContains(r, "Thông báo trúng thưởng")
+
+    def test_simulator_play_returns_prize(self):
+        r = self.client.post(
+            reverse("results:simulator_play"),
+            data='{"numbers":[1,2,3,4,5]}',
+            content_type="application/json",
+        )
+        self.assertEqual(r.status_code, 200)
+        body = r.json()
+        self.assertIn("prize", body)
+        basic = body["prize"]["basic"]
+        self.assertEqual(basic["pick_count"], 5)
+        self.assertIn("amount", basic)
+        self.assertIn("headline", basic)
+        self.assertIn("size", body["prize"])
+        self.assertIn("parity", body["prize"])
+        self.assertIn("không chi trả", body["prize"]["note"])
+        self.assertIn("popup_title", body["prize"])
+        self.assertIn("popup_body", body["prize"])
+        self.assertIn("notice_lead", body["prize"])
+        self.assertIn("won", body["prize"])
+        self.assertIn("total_amount", body["prize"])
+
+    def test_simulator_post_bootstraps_prize_popup(self):
+        r = self.client.post(reverse("results:simulator"), {"numbers": "1,2,3,4,5"})
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'id="sim-play-boot"')
+        self.assertContains(r, "popup_title")
+        self.assertContains(r, "Chúc")
+        self.assertContains(r, 'id="sim-form"')
+        self.assertContains(r, 'id="sim-prize-dialog"')
+        self.assertNotContains(r, 'id="sim-result" hidden')
+        boot = r.context["sim_play"]
+        self.assertEqual(boot["picked"], [1, 2, 3, 4, 5])
+        self.assertEqual(len(boot["drawn"]), 20)
+        self.assertIn(boot["prize"]["popup_title"], ("Chúc mừng bạn đã thắng", "Chúc may mắn lần sau"))
+        self.assertIn("won", boot["prize"])
+        self.assertIn("notice_lead", boot["prize"])
 
     def test_finder_ok(self):
         r = self.client.get(reverse("locations:finder"))
@@ -159,3 +225,89 @@ class PosTvLogicTests(TestCase):
         hits, misses = consecutive_streaks(list(Draw.objects.all()[:20]))
         self.assertIsInstance(hits, list)
         self.assertIsInstance(misses, list)
+
+
+class PrizeTableTests(TestCase):
+    def test_basic_payouts_from_article_matrix(self):
+        self.assertEqual(basic_amount(1, 1), 20_000)
+        self.assertEqual(basic_amount(2, 2), 90_000)
+        self.assertEqual(basic_amount(5, 4), 150_000)
+        self.assertEqual(basic_amount(5, 2), 0)
+        self.assertEqual(basic_amount(8, 0), 10_000)
+        self.assertEqual(basic_amount(8, 4), 10_000)
+        self.assertEqual(basic_amount(10, 0), 10_000)
+        self.assertEqual(basic_amount(10, 10), 2_000_000_000)
+        self.assertEqual(basic_amount(10, 8), 7_400_000)
+
+    def test_basic_zero_match_on_low_tier_is_miss(self):
+        result = evaluate_basic([1, 2, 3], list(range(20, 40)))
+        self.assertFalse(result["won"])
+        self.assertEqual(result["amount"], 0)
+        self.assertEqual(result["headline"], "Không trúng")
+
+    def test_basic_no_picks(self):
+        result = evaluate_basic([], list(range(1, 21)))
+        self.assertEqual(result["headline"], "Chưa chọn số")
+        self.assertFalse(result["won"])
+
+    def test_size_prize_needs_thirteen(self):
+        big13 = list(range(41, 54)) + list(range(1, 8))
+        self.assertEqual(len(big13), 20)
+        hit = evaluate_size(big13)
+        self.assertTrue(hit["won"])
+        self.assertEqual(hit["amount"], 56_000)
+        self.assertIn("Lớn", hit["name"])
+        miss = evaluate_size(list(range(1, 11)) + list(range(41, 51)))
+        self.assertFalse(miss["won"])
+        self.assertEqual(miss["amount"], 0)
+
+    def test_parity_prize_tiers(self):
+        even15 = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 1, 3, 5, 7, 9]
+        top = evaluate_parity(even15)
+        self.assertTrue(top["won"])
+        self.assertEqual(top["amount"], 210_000)
+        even13 = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 1, 3, 5, 7, 9, 11, 13]
+        mid = evaluate_parity(even13)
+        self.assertEqual(mid["amount"], 40_000)
+        split = evaluate_parity(list(range(1, 21)))
+        self.assertFalse(split["won"])
+        self.assertEqual(split["amount"], 0)
+
+    def test_evaluate_sim_payload(self):
+        payload = evaluate_sim([1], list(range(1, 21)))
+        self.assertTrue(payload["basic"]["won"])
+        self.assertEqual(payload["basic"]["amount"], 20_000)
+        self.assertEqual(payload["stake"], 10_000)
+        self.assertIn("size", payload)
+        self.assertIn("parity", payload)
+        self.assertTrue(payload["won"])
+        self.assertEqual(payload["popup_title"], "Chúc mừng bạn đã thắng")
+        self.assertIn("Trùng 1 số — 20.000 ₫", payload["popup_body"])
+        self.assertIn("Cửa Nhỏ — 56.000 ₫", payload["popup_body"])
+        self.assertIn("Trúng thưởng", payload["notice_lead"])
+
+    def test_evaluate_sim_popup_lose(self):
+        drawn = list(range(1, 11)) + list(range(41, 51))
+        payload = evaluate_sim([80], drawn)
+        self.assertFalse(payload["won"])
+        self.assertEqual(payload["total_amount"], 0)
+        self.assertEqual(payload["popup_title"], "Chúc may mắn lần sau")
+        self.assertEqual(payload["popup_body"], "")
+        self.assertEqual(payload["notice_lead"], "Không trúng · trùng 0 số")
+
+    def test_evaluate_sim_popup_basic_only(self):
+        drawn = [1, 41, 42, 43, 44, 45, 2, 3, 4, 5, 46, 47, 6, 7, 8, 9, 10, 48, 49, 50]
+        payload = evaluate_sim([1], drawn)
+        self.assertTrue(payload["basic"]["won"])
+        self.assertFalse(payload["size"]["won"])
+        self.assertFalse(payload["parity"]["won"])
+        self.assertEqual(payload["popup_title"], "Chúc mừng bạn đã thắng")
+        self.assertEqual(payload["popup_body"], "Trùng 1 số — 20.000 ₫.")
+        self.assertEqual(payload["notice_lead"], "Trúng thưởng · trùng 1 số · 20.000 ₫")
+
+    def test_evaluate_sim_popup_side_only(self):
+        payload = evaluate_sim([80], list(range(1, 21)))
+        self.assertFalse(payload["basic"]["won"])
+        self.assertTrue(payload["size"]["won"])
+        self.assertEqual(payload["popup_title"], "Chúc mừng bạn đã thắng")
+        self.assertEqual(payload["popup_body"], "Trùng 0 số. Cửa Nhỏ — 56.000 ₫.")

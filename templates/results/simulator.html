@@ -2,19 +2,134 @@
 {% block content %}
 <section class="page-head">
   <h1>Chơi thử Keno</h1>
+  <p class="muted">Mô phỏng một kỳ quay — không dùng tiền thật. <a class="text-link" href="#cach-choi">Cách chơi</a> · <a class="text-link" href="#bang-thuong">Bảng thưởng</a></p>
 </section>
 <section class="card">
-  <p>Chọn 1–10 số, rồi quay thử một kỳ mô phỏng.</p>
-  <div class="picker" id="picker"></div>
-  <div class="cta-row">
-    <button class="btn btn-ghost" type="button" id="quick-pick">Chọn ngẫu nhiên</button>
-    <button class="btn btn-gold" type="button" id="play-sim">Quay thử</button>
-  </div>
-  <p class="muted" id="pick-count">Đã chọn 0 số</p>
+  <p>Chọn 1–10 số, rồi quay thử một kỳ mô phỏng. Mệnh giá giả định {{ stake_label }} / lần.</p>
+  <form method="post" action="{% url 'results:simulator' %}" id="sim-form">
+    {% csrf_token %}
+    <input type="hidden" name="numbers" id="picked-numbers" value="{% if sim_play %}{{ sim_play.picked|join:',' }}{% endif %}">
+    <div class="picker" id="picker"></div>
+    <div class="cta-row">
+      <button class="btn btn-ghost" type="button" id="quick-pick">Chọn ngẫu nhiên</button>
+      <button class="btn btn-gold" type="submit" id="play-sim">Quay thử</button>
+    </div>
+  </form>
+  <p class="muted" id="pick-count">Đã chọn {% if sim_play %}{{ sim_play.picked|length }}{% else %}0{% endif %} số</p>
 </section>
-<section class="card" id="sim-result" hidden>
+<section class="card" id="sim-result"{% if not sim_play %} hidden{% endif %}>
   <h2>Kết quả mô phỏng</h2>
-  <ol class="balls" id="sim-balls"></ol>
-  <p id="sim-summary"></p>
+  <ol class="balls" id="sim-balls">
+    {% if sim_play %}
+      {% for n in sim_play.drawn %}
+        <li{% if n in sim_play.matched %} class="is-hit"{% endif %}>{{ n|stringformat:"02d" }}</li>
+      {% endfor %}
+    {% endif %}
+  </ol>
+  <p id="sim-summary">{% if sim_play %}{{ sim_play.summary }}{% endif %}</p>
+</section>
+<section class="card sim-prize-notice" id="sim-prize-notice" hidden>
+  <h2 id="sim-prize-notice-title">{% if sim_play %}{{ sim_play.prize.notice_title }}{% else %}Kết quả kỳ quay vừa rồi{% endif %}</h2>
+  <p class="sim-prize-notice-lead" id="sim-prize-notice-lead">{% if sim_play %}{{ sim_play.prize.notice_lead }}{% endif %}</p>
+  <div id="sim-prize" class="sim-prize"></div>
+</section>
+{% if sim_play %}
+<noscript>
+  <style>#sim-prize-notice[hidden]{display:block!important}</style>
+</noscript>
+{% endif %}
+<dialog class="sim-prize-dialog" id="sim-prize-dialog" aria-modal="true" aria-labelledby="sim-prize-dialog-title" aria-describedby="sim-prize-dialog-body">
+  <form method="dialog" class="sim-prize-dialog-inner">
+    <button class="sim-prize-dialog-x" type="submit" aria-label="Đóng">×</button>
+    <p class="sim-prize-kicker" id="sim-prize-dialog-kicker">Thông báo trúng thưởng</p>
+    <h2 id="sim-prize-dialog-title">{% if sim_play %}{{ sim_play.prize.popup_title }}{% endif %}</h2>
+    <p id="sim-prize-dialog-body"{% if sim_play and not sim_play.prize.popup_body %} hidden{% endif %}>{% if sim_play %}{{ sim_play.prize.popup_body }}{% endif %}</p>
+    <p class="muted" id="sim-prize-dialog-note">{% if sim_play %}{{ sim_play.prize.note }}{% endif %}</p>
+    <button class="btn btn-gold btn-block" type="submit" autofocus>Đóng</button>
+  </form>
+</dialog>
+{% if sim_play %}{{ sim_play|json_script:"sim-play-boot" }}{% endif %}
+<section class="card sim-howto" id="cach-choi">
+  <h2>Cách chơi Keno</h2>
+  <p>Keno quay 20 số từ 01 đến 80. Có ba cách chơi: chọn số (cơ bản), Lớn/Nhỏ và Chẵn/Lẻ. Dưới đây là cách dùng màn hình này, cách đọc kết quả và bảng giải mô phỏng.</p>
+  <ol class="info-steps">
+    {% for step in howto_steps %}
+      <li>
+        <span class="info-step-num" aria-hidden="true">{{ forloop.counter }}</span>
+        <div>
+          <strong>{{ step.name }}</strong>
+          <p>{{ step.text }}</p>
+        </div>
+      </li>
+    {% endfor %}
+  </ol>
+  <h3>Ba cách chơi</h3>
+  <div class="sim-play-types">
+    {% for play in sim_play_types %}
+    <details{% if forloop.first %} open{% endif %}>
+      <summary>{{ play.name }}</summary>
+      <p>{{ play.text }}</p>
+    </details>
+    {% endfor %}
+  </div>
+  <h3>Cách đối chiếu trên màn hình này</h3>
+  <p>Sau khi bấm Quay thử, cửa sổ thông báo trúng thưởng hiện ngay. Dòng tóm tắt bốn phần là thống kê kỳ quay; sau khi đóng cửa sổ, khu vực Kết quả kỳ quay vừa rồi hiện giải và số tiền mô phỏng:</p>
+  <ul class="sim-score-keys">
+    <li><strong>Trùng X số</strong> — cách chơi cơ bản: bậc = số bạn chọn, giải theo số trùng trên bảng thưởng.</li>
+    <li><strong>Tổng</strong> — cộng 20 số; Nhỏ 210–810, Lớn 811–1410.</li>
+    <li><strong>Lớn / Nhỏ (giải)</strong> — từ 13 số trong 41–80 (Lớn) hoặc 01–40 (Nhỏ).</li>
+    <li><strong>Chẵn / Lẻ (giải)</strong> — 13–14 số hoặc từ 15 số chẵn / lẻ.</li>
+  </ul>
+  <h3 id="bang-thuong">Bảng thưởng mô phỏng</h3>
+  <p>Mệnh giá {{ stake_label }} / lần. Cột là bậc (số bạn chọn), hàng là số trùng với 20 số quay. Ô trống là không có giải.</p>
+  <div class="table-wrap sim-prize-wrap">
+    <table class="data sim-prize-table" id="sim-prize-table">
+      <thead>
+        <tr>
+          <th>Trùng</th>
+          {% for pick in prize_table.picks %}
+          <th>Bậc {{ pick }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in prize_table.rows %}
+        <tr>
+          <th>{{ row.match }}</th>
+          {% for cell in row.cells %}
+          <td class="nums" data-pick="{{ cell.pick }}" data-match="{{ cell.match }}">{{ cell.label }}</td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="muted">Bậc 10 trùng 10 số: 2.000.000.000 ₫ nếu không quá 5 vé trúng hạng này trong kỳ; nếu nhiều hơn thì 10.000.000.000 ₫ chia đều. Chơi thử luôn hiện 2.000.000.000 ₫.</p>
+  <h3>Cửa Lớn/Nhỏ và Chẵn/Lẻ</h3>
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr>
+          <th>Cửa</th>
+          <th>Điều kiện</th>
+          <th>Thưởng</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in side_prizes %}
+        <tr>
+          <td>{{ row.name }}</td>
+          <td>{{ row.rule }}</td>
+          <td class="nums">{{ row.amount_label }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="muted">Đây là kỳ mô phỏng, không phải kết quả chính thức và không thay thế xác nhận tại điểm bán. Số tiền trên màn hình chỉ để đọc giải, không chi trả.</p>
+  <div class="cta-row">
+    <a class="btn btn-ghost" href="{% url 'content:how_to_play' %}">Hướng dẫn đầy đủ</a>
+    <a class="btn btn-ghost" href="{% url 'results:check_ticket' %}">Dò vé</a>
+  </div>
 </section>
 {% endblock %}
