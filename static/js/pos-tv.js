@@ -274,16 +274,20 @@
         meta.data.forEach(function (pt, i) {
           const pos = pt.getProps(["x", "y"], true);
           const color = colors[i] || "#FFD000";
+          const area = chart.chartArea || {};
+          const span = Math.min(area.right - area.left || 240, area.bottom - area.top || 80);
+          const r = Math.max(4, Math.min(14, span / 22));
+          const fontPx = Math.max(6, Math.min(12, r * 0.85));
           ctx.save();
           ctx.beginPath();
-          ctx.arc(pos.x, pos.y, 16, 0, Math.PI * 2);
+          ctx.arc(pos.x, pos.y, r, 0, Math.PI * 2);
           ctx.fillStyle = color;
           ctx.fill();
-          ctx.lineWidth = 2;
+          ctx.lineWidth = Math.max(1, r / 8);
           ctx.strokeStyle = "#fff";
           ctx.stroke();
           ctx.fillStyle = color === "#111111" || color === "#111" ? "#fff" : "#111";
-          ctx.font = "700 12px Be Vietnam Pro, Arial, sans-serif";
+          ctx.font = "700 " + fontPx + "px Be Vietnam Pro, Arial, sans-serif";
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
           ctx.fillText(String(nums[i] != null ? nums[i] : ""), pos.x, pos.y + 0.5);
@@ -295,6 +299,11 @@
 
   function makeChart(canvas, payload, yLabels, yMax) {
     if (!window.Chart || !canvas || !payload) return null;
+    const w = canvas.clientWidth || 320;
+    const h = canvas.clientHeight || 140;
+    const tick = Math.max(7, Math.min(12, w / 48));
+    const padR = Math.max(12, Math.min(28, w / 22));
+    const padT = Math.max(16, Math.min(30, h / 7));
     return new window.Chart(canvas, {
       type: "line",
       data: {
@@ -319,7 +328,7 @@
         maintainAspectRatio: false,
         animation: { duration: 600 },
         plugins: { legend: { display: false }, tooltip: { enabled: false } },
-        layout: { padding: { top: 28, right: 12, left: 4, bottom: 4 } },
+        layout: { padding: { top: padT, right: padR, left: 4, bottom: 6 } },
         scales: {
           x: { display: false },
           y: {
@@ -328,7 +337,8 @@
             ticks: {
               stepSize: 1,
               color: "#fff",
-              font: { weight: "700", size: 13 },
+              padding: 4,
+              font: { weight: "700", size: tick },
               callback: function (v) {
                 return yLabels[v] || "";
               },

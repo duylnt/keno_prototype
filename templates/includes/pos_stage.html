@@ -44,7 +44,7 @@
               <div class="pos-gold-tab">KỲ QUAY TIẾP THEO</div>
               <div class="pos-countdown is-red" data-pos-cd>{{ pos.countdown_label }}</div>
             </div>
-            <p class="pos-cta-xl">CHUẨN BỊ DỪNG BÁN VÉ</p>
+            <p class="pos-cta-xl">CHUẨN BỊ<br>DỪNG BÁN VÉ</p>
           </div>
         </div>
       </section>
@@ -257,7 +257,7 @@
 
         <div class="pos-stat-row">
           <div class="pos-stat-title">SỐ VỀ NHIỀU</div>
-          <div>
+          <div class="pos-stat-group">
             <div class="pos-stat-sub">5 KỲ GẦN NHẤT</div>
             <div class="pos-stat-balls" id="pos-hot5">
               {% for x in pos.hot5 %}
@@ -265,7 +265,7 @@
               {% endfor %}
             </div>
           </div>
-          <div>
+          <div class="pos-stat-group">
             <div class="pos-stat-sub">100 KỲ</div>
             <div class="pos-stat-balls" id="pos-hot100">
               {% for x in pos.hot100 %}
@@ -277,7 +277,7 @@
 
         <div class="pos-stat-row">
           <div class="pos-stat-title">SỐ VỀ ÍT</div>
-          <div>
+          <div class="pos-stat-group">
             <div class="pos-stat-sub">5 KỲ GẦN NHẤT</div>
             <div class="pos-stat-balls" id="pos-cold5">
               {% for x in pos.cold5 %}
@@ -285,7 +285,7 @@
               {% endfor %}
             </div>
           </div>
-          <div>
+          <div class="pos-stat-group">
             <div class="pos-stat-sub">100 KỲ</div>
             <div class="pos-stat-balls" id="pos-cold100">
               {% for x in pos.cold100 %}
@@ -297,21 +297,25 @@
 
         <div class="pos-stat-row is-single">
           <div class="pos-stat-title">SỐ VỀ LIÊN TỤC</div>
-          <div class="pos-stat-balls" id="pos-hits">
-            {% for x in pos.hit_streaks %}
-              <span class="tv-ball-meta"><span class="tv-ball">{{ x.number|stringformat:"02d" }}</span><small>{{ x.count }} kỳ</small></span>
-            {% empty %}
-              <span class="pos-stat-sub">Chưa có chuỗi ≥ 2 kỳ</span>
-            {% endfor %}
+          <div class="pos-stat-group">
+            <div class="pos-stat-balls" id="pos-hits">
+              {% for x in pos.hit_streaks %}
+                <span class="tv-ball-meta"><span class="tv-ball">{{ x.number|stringformat:"02d" }}</span><small>{{ x.count }} kỳ</small></span>
+              {% empty %}
+                <span class="pos-stat-sub">Chưa có chuỗi ≥ 2 kỳ</span>
+              {% endfor %}
+            </div>
           </div>
         </div>
 
         <div class="pos-stat-row is-single">
           <div class="pos-stat-title">SỐ KHÔNG VỀ LIÊN TỤC</div>
-          <div class="pos-stat-balls" id="pos-misses">
-            {% for x in pos.miss_streaks %}
-              <span class="tv-ball-meta"><span class="tv-ball is-white">{{ x.number|stringformat:"02d" }}</span><small>{{ x.count }} kỳ</small></span>
-            {% endfor %}
+          <div class="pos-stat-group">
+            <div class="pos-stat-balls" id="pos-misses">
+              {% for x in pos.miss_streaks %}
+                <span class="tv-ball-meta"><span class="tv-ball is-white">{{ x.number|stringformat:"02d" }}</span><small>{{ x.count }} kỳ</small></span>
+              {% endfor %}
+            </div>
           </div>
         </div>
       </section>

@@ -13,14 +13,9 @@
   <div class="live-main">
     {% include "includes/pos_stage.html" %}
   </div>
-  <aside class="live-sidebar">
-    <article class="card live-cd">
-      <span class="eyebrow">Kỳ tiếp theo</span>
-      <strong data-countdown>{{ pos.countdown }}</strong>
-      <small>{% if pos.next_draw_label %}{{ pos.next_draw_label }}{% elif pos.next_draw %}{{ pos.next_draw }}{% else %}Ngoài khung giờ{% endif %}</small>
-    </article>
+  <section class="live-community" aria-label="Thảo luận cộng đồng">
     {% include "includes/facebook_discussion.html" %}
-  </aside>
+  </section>
 </div>
 {{ pos|json_script:"pos-tv-data" }}
 {% endblock %}

@@ -191,6 +191,8 @@ class LivePipTests(TestCase):
         self.assertEqual(r.cookies[WATCH_COOKIE].value, "1")
         self.assertEqual(html.count('id="pos-stage"'), 1)
         self.assertEqual(html.count('id="pos-tv-data"'), 1)
+        self.assertContains(r, "live-community")
+        self.assertNotContains(r, "live-sidebar")
         self.assertNotContains(r, "live-pip-viewport")
 
     def test_pip_visible_after_leaving_live(self):
