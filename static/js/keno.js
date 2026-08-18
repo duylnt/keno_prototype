@@ -68,6 +68,59 @@
         el.textContent = formatCountdown(data.countdown);
       });
     }
+    syncLivePip();
+  }
+
+  const pip = document.querySelector("[data-live-pip]");
+  function readCookie(name) {
+    const parts = ("; " + document.cookie).split("; " + name + "=");
+    if (parts.length < 2) return "";
+    return decodeURIComponent(parts.pop().split(";")[0]);
+  }
+  function writeCookie(name, value) {
+    document.cookie = name + "=" + encodeURIComponent(value) + "; Path=/; SameSite=Lax";
+  }
+  function clearCookie(name) {
+    document.cookie = name + "=; Path=/; Max-Age=0; SameSite=Lax";
+  }
+  function pipCookies() {
+    if (!pip) return { watch: "keno_live_pip", off: "keno_live_pip_off" };
+    return {
+      watch: pip.getAttribute("data-watch-cookie") || "keno_live_pip",
+      off: pip.getAttribute("data-off-cookie") || "keno_live_pip_off",
+    };
+  }
+  function setPipVisible(on) {
+    if (!pip) return;
+    pip.hidden = !on;
+    pip.classList.toggle("is-off", !on);
+  }
+  function syncLivePip() {
+    if (!pip) return;
+    const onLive = pip.hasAttribute("data-on-live-page") || document.body.classList.contains("page-live");
+    const cookies = pipCookies();
+    if (onLive) {
+      writeCookie(cookies.watch, "1");
+      clearCookie(cookies.off);
+      setPipVisible(false);
+      return;
+    }
+    const watching = readCookie(cookies.watch) === "1";
+    const dismissed = !!readCookie(cookies.off);
+    setPipVisible(watching && !dismissed);
+  }
+  if (pip) {
+    syncLivePip();
+    const closeBtn = pip.querySelector("[data-live-pip-close]");
+    if (closeBtn) {
+      closeBtn.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        const cookies = pipCookies();
+        writeCookie(cookies.off, pip.getAttribute("data-pip-code") || "1");
+        setPipVisible(false);
+      });
+    }
   }
 
   function poll() {

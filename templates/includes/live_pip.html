@@ -1,0 +1,28 @@
+{# Floating mini player for Trực tiếp quay số. Tắt ẩn đến khi mở lại trang trực tiếp. #}
+<aside id="live-pip"
+       class="live-pip{% if not live_pip.visible %} is-off{% endif %}"
+       {% if not live_pip.visible %}hidden{% endif %}
+       data-live-pip
+       data-live-url="{% url 'core:live_results' %}"
+       data-watch-cookie="keno_live_pip"
+       data-off-cookie="keno_live_pip_off"
+       data-pip-code="{{ live_pip.period }}"
+       {% if live_pip.on_live %}data-on-live-page="1"{% endif %}
+       aria-label="Trực tiếp quay số">
+  <button type="button"
+          class="live-pip-close"
+          data-live-pip-close
+          aria-label="Tắt trực tiếp">
+    <span aria-hidden="true">×</span>
+  </button>
+  <a class="live-pip-link" href="{% url 'core:live_results' %}" aria-label="Mở trực tiếp quay số">
+    {% if live_pip.visible and pos %}
+    <div class="live-pip-viewport" aria-hidden="true">
+      {% include "includes/pos_stage.html" %}
+    </div>
+    {% endif %}
+  </a>
+  {% if live_pip.visible and pos %}
+    {{ pos|json_script:"pos-tv-data" }}
+  {% endif %}
+</aside>

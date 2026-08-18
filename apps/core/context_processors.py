@@ -2,9 +2,10 @@ from django.conf import settings
 from django.urls import reverse
 
 from apps.community.models import CommunityPost
+from apps.core.live_pip import pip_flags
 from apps.core.models import Banner, SiteSettings
 from apps.core.nav import nav_on
-from apps.results.services import countdown_seconds, latest_draw, next_draw_at
+from apps.results.services import countdown_seconds, latest_draw, next_draw_at, pos_tv_payload
 
 _FB_PLACEHOLDERS = {
     "",
@@ -41,7 +42,14 @@ def site_chrome(request):
     )
     zalo_group_url = _clean_url(site.zalo_group_url, settings.ZALO_GROUP_URL)
     facebook_open_url = facebook_page_url or facebook_group_url
-    return {
+    flags = nav_on(request)
+    latest = latest_draw()
+    live_pip = pip_flags(
+        request,
+        on_live=flags["live"],
+        period=latest.period_code if latest else "",
+    )
+    ctx = {
         "site_settings": site,
         "ga4_id": site.ga4_measurement_id or settings.GA4_MEASUREMENT_ID,
         "gtm_id": site.gtm_container_id or settings.GTM_CONTAINER_ID,
@@ -49,7 +57,7 @@ def site_chrome(request):
         "home_banners": Banner.objects.filter(is_active=True, placement=Banner.PLACEMENT_HOME)[:3],
         "nav_countdown": countdown_seconds(),
         "nav_next_draw": next_draw_at(),
-        "nav_latest": latest_draw(),
+        "nav_latest": latest,
         "facebook_group_url": facebook_group_url,
         "facebook_page_url": facebook_page_url,
         "facebook_app_id": facebook_app_id,
@@ -58,5 +66,11 @@ def site_chrome(request):
         "zalo_group_url": zalo_group_url,
         "buy_ticket_gps_url": reverse("locations:finder") + "?gps=1",
         "load_fb_sdk": bool(facebook_app_id or facebook_page_url),
-        "nav_on": nav_on(request),
+        "nav_on": flags,
+        "live_pip": live_pip,
     }
+    if live_pip["visible"]:
+        ctx["pos"] = pos_tv_payload()
+        ctx["ball_slots"] = range(20)
+        ctx["grid_numbers"] = range(1, 81)
+    return ctx

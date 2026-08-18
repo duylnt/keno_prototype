@@ -5,6 +5,7 @@ from django.shortcuts import render
 
 from apps.community.models import CommunityPost
 from apps.content.models import Article
+from apps.core.live_pip import arm_watching
 from apps.locations.models import PosLocation
 from apps.results.services import countdown_seconds, homepage_stats, latest_draw, next_draw_at, pos_tv_payload
 
@@ -43,7 +44,7 @@ def home(request):
 def pos_display(request):
     payload = pos_tv_payload()
     discussion_posts = CommunityPost.objects.filter(status=CommunityPost.STATUS_APPROVED)[:6]
-    return render(
+    response = render(
         request,
         "core/pos_display.html",
         {
@@ -59,6 +60,7 @@ def pos_display(request):
             "grid_numbers": range(1, 81),
         },
     )
+    return arm_watching(response)
 
 
 def pos_tv_api(request):

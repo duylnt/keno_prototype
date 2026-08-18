@@ -857,13 +857,14 @@
   margin: auto;
 }
 
+/* Full live page only — do not let page-width rules restyle the corner PiP. */
 @media (max-width: 1023px) {
-  .pos-split {
+  .page-live .pos-split {
     grid-template-columns: 1fr;
     grid-template-rows: auto minmax(0, 1fr);
   }
-  .pos-split.is-wide-left { grid-template-columns: 1fr; }
-  .pos-col-left {
+  .page-live .pos-split.is-wide-left { grid-template-columns: 1fr; }
+  .page-live .pos-col-left {
     flex-direction: row;
     flex-wrap: wrap;
     align-items: center;
@@ -871,10 +872,10 @@
     gap: 8px 16px;
     overflow: visible;
   }
-  .pos-mascot,
-  .pos-keno-mark { display: none; }
-  .pos-curtain { width: 10%; }
-  .pos-splash .pos-mascot { display: block; width: clamp(72px, 18vw, 140px); }
+  .page-live .pos-mascot,
+  .page-live .pos-keno-mark { display: none; }
+  .page-live .pos-curtain { width: 10%; }
+  .page-live .pos-splash .pos-mascot { display: block; width: clamp(72px, 18cqw, 140px); }
 }
 
 @media (max-aspect-ratio: 16/10) {

@@ -32,6 +32,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Chakra+Petch:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/keno.css' %}">
+  {% if live_pip.visible %}
+  <link rel="stylesheet" href="{% static 'css/pos-tv.css' %}">
+  {% endif %}
   {% jsonld_script %}
   {% if gtm_id %}
   <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','{{ gtm_id }}');</script>
@@ -151,8 +154,15 @@
   {% include "includes/buy_ticket_dialog.html" %}
   {% endblock %}
 
+  {% include "includes/live_pip.html" %}
+
   <script>window.KENO = { csrf: "{{ csrf_token }}", liveApi: "{% url 'results:live_api' %}", sse: "{% url 'results:live_sse' %}", track: "{% url 'analytics:collect' %}" };</script>
   <script src="{% static 'js/keno.js' %}"></script>
+  {% if live_pip.visible %}
+  <script>window.KENO_POS = { api: "{% url 'core:pos_tv_api' %}", pip: true };</script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="{% static 'js/pos-tv.js' %}"></script>
+  {% endif %}
   {% block extra_js %}{% endblock %}
 </body>
 </html>

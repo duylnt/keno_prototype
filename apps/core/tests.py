@@ -2,6 +2,7 @@ from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
 from apps.content.models import StaticPage
+from apps.core.live_pip import OFF_COOKIE, WATCH_COOKIE, pip_flags
 from apps.core.nav import nav_on, path_under
 from apps.results.services import ensure_draws_up_to_now
 
@@ -129,3 +130,108 @@ class PublicNavHighlightTests(TestCase):
 
         ctx = site_chrome(request)
         self.assertEqual(ctx["nav_on"], nav_on("/thong-tin/"))
+        self.assertIn("live_pip", ctx)
+        self.assertFalse(ctx["live_pip"]["visible"])
+
+
+class LivePipTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        ensure_draws_up_to_now(lookback_days=0)
+
+    def test_flags_hidden_until_watching(self):
+        req = RequestFactory().get("/")
+        flags = pip_flags(req, on_live=False, period="20260818-001")
+        self.assertFalse(flags["visible"])
+        self.assertFalse(flags["watching"])
+
+    def test_flags_visible_when_watching(self):
+        req = RequestFactory().get("/")
+        req.COOKIES[WATCH_COOKIE] = "1"
+        flags = pip_flags(req, on_live=False, period="20260818-001")
+        self.assertTrue(flags["visible"])
+
+    def test_flags_hidden_on_live_page(self):
+        req = RequestFactory().get("/ket-qua-truc-tiep/")
+        req.COOKIES[WATCH_COOKIE] = "1"
+        flags = pip_flags(req, on_live=True, period="20260818-001")
+        self.assertFalse(flags["visible"])
+        self.assertTrue(flags["on_live"])
+
+    def test_flags_dismissed(self):
+        req = RequestFactory().get("/")
+        req.COOKIES[WATCH_COOKIE] = "1"
+        req.COOKIES[OFF_COOKIE] = "1"
+        flags = pip_flags(req, on_live=False, period="20260818-001")
+        self.assertTrue(flags["dismissed"])
+        self.assertFalse(flags["visible"])
+
+    def test_pip_markup_on_public_page(self):
+        r = self.client.get("/")
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'id="live-pip"')
+        self.assertContains(r, 'data-live-pip')
+        self.assertContains(r, 'aria-label="Tắt trực tiếp"')
+        self.assertContains(r, "live-pip is-off")
+        self.assertContains(r, "data-pip-code")
+        self.assertNotContains(r, 'data-on-live-page="1"')
+        self.assertNotContains(r, "live-pip-balls")
+        self.assertNotContains(r, "live-pip-viewport")
+        self.assertNotContains(r, 'id="pos-stage"')
+        self.assertNotRegex(r.content.decode(), r'id="live-pip"[^>]*\bdata-period=')
+
+    def test_pip_hidden_on_live_page(self):
+        r = self.client.get(reverse("core:live_results"))
+        html = r.content.decode()
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'id="live-pip"')
+        self.assertContains(r, 'data-on-live-page="1"')
+        self.assertContains(r, "live-pip is-off")
+        self.assertContains(r, 'aria-label="Tắt trực tiếp"')
+        self.assertEqual(r.cookies[WATCH_COOKIE].value, "1")
+        self.assertEqual(html.count('id="pos-stage"'), 1)
+        self.assertEqual(html.count('id="pos-tv-data"'), 1)
+        self.assertNotContains(r, "live-pip-viewport")
+
+    def test_pip_visible_after_leaving_live(self):
+        self.client.get(reverse("core:live_results"))
+        r = self.client.get("/")
+        html = r.content.decode()
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'id="live-pip"')
+        self.assertNotContains(r, "live-pip is-off")
+        self.assertContains(r, 'aria-label="Tắt trực tiếp"')
+        self.assertTrue(r.context["live_pip"]["visible"])
+        self.assertContains(r, "live-pip-viewport")
+        self.assertContains(r, "CHÀO MỪNG BẠN ĐẾN VỚI")
+        self.assertContains(r, 'id="pos-stage"')
+        self.assertContains(r, "pos-tv.js")
+        self.assertContains(r, "pos-tv.css")
+        self.assertContains(r, 'id="pos-tv-data"')
+        self.assertNotContains(r, "live-pip-balls")
+        self.assertEqual(html.count('id="pos-stage"'), 1)
+        self.assertEqual(html.count('id="pos-tv-data"'), 1)
+        stats = self.client.get("/thong-ke/")
+        self.assertContains(stats, "live-pip-viewport")
+        self.assertContains(stats, "CHÀO MỪNG BẠN ĐẾN VỚI")
+        self.assertContains(stats, 'id="pos-stage"')
+        self.assertNotContains(stats, "live-pip-balls")
+
+    def test_pip_dismissed_stays_off(self):
+        self.client.get(reverse("core:live_results"))
+        self.client.cookies[OFF_COOKIE] = "1"
+        r = self.client.get("/")
+        self.assertContains(r, 'id="live-pip"')
+        self.assertContains(r, "live-pip is-off")
+        self.assertTrue(r.context["live_pip"]["dismissed"])
+        self.assertFalse(r.context["live_pip"]["visible"])
+        self.assertNotContains(r, "live-pip-viewport")
+        self.assertNotContains(r, 'id="pos-stage"')
+
+    def test_visiting_live_clears_dismiss(self):
+        self.client.cookies[OFF_COOKIE] = "1"
+        r = self.client.get(reverse("core:live_results"))
+        self.assertEqual(r.cookies[OFF_COOKIE].value, "")
+        home = self.client.get("/")
+        self.assertNotContains(home, "live-pip is-off")
+        self.assertTrue(home.context["live_pip"]["visible"])
