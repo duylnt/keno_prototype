@@ -237,3 +237,20 @@ class LivePipTests(TestCase):
         home = self.client.get("/")
         self.assertNotContains(home, "live-pip is-off")
         self.assertTrue(home.context["live_pip"]["visible"])
+
+    def test_pip_css_scales_from_pip_box(self):
+        from pathlib import Path
+
+        root = Path(__file__).resolve().parents[2]
+        keno = (root / "static/css/keno.css").read_text()
+        tv = (root / "static/css/pos-tv.css").read_text()
+        self.assertIn("container-name: livepip", keno)
+        self.assertIn("280px", keno)
+        self.assertIn("360px", keno)
+        self.assertIn(".live-pip .pos-stage", tv)
+        self.assertIn("container: none", tv)
+        self.assertIn("min-height: 0", tv)
+        self.assertIn(".live-pip .pos-mascot", tv)
+        self.assertIn("--pip-ball", tv)
+        self.assertNotIn(".live-pip .tv-ball {\n  --ball-size: 18px", keno)
+        self.assertNotIn(".live-pip .pos-stat-balls .tv-ball { --ball-size: 16px; }", keno)

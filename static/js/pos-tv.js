@@ -276,8 +276,13 @@
           const color = colors[i] || "#FFD000";
           const area = chart.chartArea || {};
           const span = Math.min(area.right - area.left || 240, area.bottom - area.top || 80);
-          const r = Math.max(4, Math.min(14, span / 22));
-          const fontPx = Math.max(6, Math.min(12, r * 0.85));
+          const inPip = !!(chart.canvas && chart.canvas.closest && chart.canvas.closest(".live-pip"));
+          const r = inPip
+            ? Math.max(3, Math.min(6, span / 28))
+            : Math.max(4, Math.min(14, span / 22));
+          const fontPx = inPip
+            ? Math.max(4, Math.min(7, r * 0.85))
+            : Math.max(6, Math.min(12, r * 0.85));
           ctx.save();
           ctx.beginPath();
           ctx.arc(pos.x, pos.y, r, 0, Math.PI * 2);
@@ -299,11 +304,13 @@
 
   function makeChart(canvas, payload, yLabels, yMax) {
     if (!window.Chart || !canvas || !payload) return null;
-    const w = canvas.clientWidth || 320;
-    const h = canvas.clientHeight || 140;
-    const tick = Math.max(7, Math.min(12, w / 48));
-    const padR = Math.max(12, Math.min(28, w / 22));
-    const padT = Math.max(16, Math.min(30, h / 7));
+    const inPip = !!(window.KENO_POS && window.KENO_POS.pip) ||
+      !!(canvas.closest && canvas.closest(".live-pip"));
+    const w = canvas.clientWidth || (inPip ? 180 : 320);
+    const h = canvas.clientHeight || (inPip ? 48 : 140);
+    const tick = inPip ? Math.max(5, Math.min(7, w / 56)) : Math.max(7, Math.min(12, w / 48));
+    const padR = inPip ? Math.max(4, Math.min(10, w / 28)) : Math.max(12, Math.min(28, w / 22));
+    const padT = inPip ? Math.max(4, Math.min(8, h / 12)) : Math.max(16, Math.min(30, h / 7));
     return new window.Chart(canvas, {
       type: "line",
       data: {
@@ -314,7 +321,7 @@
           {
             data: payload.values || [],
             borderColor: "rgba(255,255,255,0.85)",
-            borderWidth: 2,
+            borderWidth: inPip ? 1 : 2,
             pointRadius: 0,
             pointHoverRadius: 0,
             tension: 0.15,
@@ -328,13 +335,14 @@
         maintainAspectRatio: false,
         animation: { duration: 600 },
         plugins: { legend: { display: false }, tooltip: { enabled: false } },
-        layout: { padding: { top: padT, right: padR, left: 4, bottom: 6 } },
+        layout: { padding: { top: padT, right: padR, left: inPip ? 2 : 4, bottom: inPip ? 2 : 6 } },
         scales: {
           x: { display: false },
           y: {
             min: -0.35,
             max: yMax + 0.35,
             ticks: {
+              display: !inPip,
               stepSize: 1,
               color: "#fff",
               padding: 4,

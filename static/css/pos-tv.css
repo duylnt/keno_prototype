@@ -935,5 +935,346 @@
 }
 
 @media (max-aspect-ratio: 16/10) {
-  .pos-toolbar { opacity: 0.85; }
+  .page-live .pos-toolbar { opacity: 0.85; }
+}
+
+/* ── Collapsed PiP mini-TV ──────────────────────────────────────────────
+   pos-tv.css loads after keno.css, so these win the cascade.
+   cqi/cqb for type & padding resolve against .live-pip (the only size
+   container for the stage). Ball grids keep their own size containers
+   so 4×5 / 8×10 packs into leftover space with no 16px floor. */
+.live-pip .live-stage-frame,
+.live-pip .pos-stage,
+.live-pip .pos-screen,
+.live-pip .pos-col,
+.live-pip .pos-balls-20,
+.live-pip .pos-stat-balls {
+  container: none;
+}
+
+.live-pip .pos-stage {
+  pointer-events: none;
+  overflow: hidden;
+  --pos-frame-inset: 1.5cqi;
+  --pos-frame-bw: 0.65cqi;
+  --pos-safe: calc(var(--pos-frame-inset) + var(--pos-frame-bw) + 1.7cqi);
+  --pos-gap: 1cqi;
+  --pos-pad: var(--pos-safe);
+  --pos-foot-h: 0px;
+  --pip-type: min(2.7cqi, 5.6cqb, 9px);
+  --pip-type-sm: min(2.3cqi, 4.8cqb, 8px);
+  --pip-title: min(4cqi, 8.4cqb, 14px);
+  --pip-cd: min(5.8cqi, 14cqb, 18px);
+  --pip-ball: min(5.4cqi, 13.5cqb, 18px);
+  --pip-dot: min(2.4cqi, 6.2cqb, 8px);
+}
+
+.live-pip .pos-stage::before {
+  background-size: min(28px, 8cqmin) min(28px, 8cqmin);
+  opacity: 0.1;
+}
+
+.live-pip .pos-toolbar,
+.live-pip .pos-corner-cloud,
+.live-pip .pos-curtain,
+.live-pip .pos-tv-footer,
+.live-pip .pos-18,
+.live-pip .pos-brand small,
+.live-pip .pos-dots,
+.live-pip .pos-speech,
+.live-pip .pos-mascot,
+.live-pip .pos-keno-mark,
+.live-pip .pos-gold-frame::before,
+.live-pip .pos-gold-frame::after {
+  display: none;
+}
+
+.live-pip .pos-gold-frame {
+  inset: var(--pos-frame-inset);
+  border-width: var(--pos-frame-bw);
+  border-radius: 2.4cqi;
+  box-shadow: inset 0 0 0 1px #8b6914;
+}
+
+.live-pip .pos-screen {
+  padding: var(--pos-safe);
+  overflow: hidden;
+}
+.live-pip .pos-screen.has-footer {
+  padding-bottom: var(--pos-safe);
+}
+
+.live-pip .pos-split {
+  grid-template-columns: minmax(0, 0.3fr) minmax(0, 0.7fr);
+  grid-template-rows: none;
+  gap: 1.4cqi;
+}
+.live-pip .pos-col,
+.live-pip .pos-col-left,
+.live-pip .pos-col-right {
+  overflow: hidden;
+  min-width: 0;
+  min-height: 0;
+}
+.live-pip .pos-col-left {
+  justify-content: flex-start;
+  gap: 1.4cqb;
+  padding: 0;
+}
+.live-pip .pos-left-block { gap: 0.4cqb; }
+
+.live-pip .pos-brand { gap: 0; }
+.live-pip .pos-brand strong {
+  font-size: var(--pip-title);
+  letter-spacing: 0.06em;
+  line-height: 1;
+}
+.live-pip .pos-label-gold,
+.live-pip .pos-label-white {
+  font-size: var(--pip-type-sm);
+  text-shadow: none;
+  letter-spacing: 0.03em;
+}
+.live-pip .pos-countdown {
+  font-size: var(--pip-cd);
+  line-height: 0.92;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.28);
+}
+.live-pip .pos-countdown.is-red {
+  font-size: min(6.6cqi, 16cqb, 20px);
+}
+.live-pip .pos-period-xl,
+.live-pip .pos-remain {
+  font-size: min(4.4cqi, 11cqb, 15px);
+  line-height: 1;
+}
+.live-pip .pos-cta-xl {
+  font-size: var(--pip-title);
+  line-height: 1.1;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.28);
+  padding-inline: 0;
+}
+.live-pip .pos-recent-kicker {
+  font-size: var(--pip-type);
+  max-width: none;
+  line-height: 1.15;
+}
+.live-pip .pos-empty { font-size: var(--pip-type); }
+
+/* Welcome — no mascot, compact stack */
+.live-pip .pos-splash .pos-brand { display: none; }
+.live-pip .pos-splash-inner {
+  gap: 0.8cqb;
+  width: min(72cqi, 78%);
+  padding-inline: 0;
+}
+.live-pip .pos-welcome {
+  font-size: var(--pip-type-sm);
+  letter-spacing: 0.08em;
+}
+.live-pip .pos-keno-hero-logo {
+  width: min(30cqi, 38%);
+  max-height: 26cqb;
+  margin: 0.4cqb auto;
+}
+.live-pip .pos-hero-line {
+  font-size: var(--pip-title);
+  margin-top: 0.4cqb;
+}
+.live-pip .pos-hero-sub { font-size: var(--pip-type-sm); }
+
+/* Stop-sales / hold-ticket — drop empty left slab, fill the frame */
+.live-pip .pos-stop .pos-split,
+.live-pip .pos-hold .pos-split {
+  grid-template-columns: minmax(0, 1fr);
+}
+.live-pip .pos-stop .pos-col-left,
+.live-pip .pos-hold .pos-col-left {
+  display: none;
+}
+.live-pip .pos-gold-panel {
+  width: min(86cqi, 100%);
+  max-width: 100%;
+  min-height: 0;
+  height: auto;
+  padding: 3.6cqb 3cqi 2.2cqb;
+  border-radius: 2.2cqi;
+  box-shadow: 0 2px 0 #a67c00;
+}
+.live-pip .pos-gold-tab {
+  top: -5px;
+  font-size: var(--pip-type-sm);
+  padding: 1px 7px;
+  border-radius: 4px;
+}
+.live-pip .pos-stop-right,
+.live-pip .pos-hold-right {
+  gap: 2.4cqb;
+  padding: 2cqb 2cqi 0;
+  justify-content: center;
+}
+
+/* Live draw bar */
+.live-pip .pos-live-bar {
+  border-radius: 1.6cqi;
+  padding: 0.8cqb 1.2cqi;
+  margin-bottom: 1.2cqb;
+  font-size: var(--pip-type-sm);
+  box-shadow: 0 2px 0 #a67c00;
+  gap: 1cqi;
+}
+.live-pip .pos-live-bar span {
+  gap: 3px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+.live-pip .pos-count-box {
+  min-width: 1.4em;
+  padding: 0 3px;
+  font-size: var(--pip-type);
+  border-radius: 3px;
+}
+
+/* Balls — no 16px/18px floor; cap so they never fill the card */
+.live-pip .tv-ball {
+  --ball-size: var(--pip-ball);
+  flex-shrink: 1;
+  box-shadow:
+    inset -1px -2px 3px rgba(90, 50, 0, 0.35),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.35),
+    0 1px 2px rgba(0, 0, 0, 0.35);
+}
+.live-pip .tv-ball.is-empty,
+.live-pip .pos-slot {
+  border-width: 1px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.45);
+}
+.live-pip .pos-slots,
+.live-pip .pos-balls-45 {
+  --g: 0.7cqi;
+}
+.live-pip .pos-slots .tv-ball,
+.live-pip .pos-slots .pos-slot,
+.live-pip .pos-balls-45 .tv-ball {
+  --ball-size: min(
+    100%,
+    calc((100cqi - 4 * var(--g, 0.7cqi)) / 5),
+    calc((100cqb - 3 * var(--g, 0.7cqi)) / 4),
+    18px
+  );
+  width: min(var(--ball-size), 100%);
+  height: min(var(--ball-size), 100%);
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* 80-grid as tiny dots */
+.live-pip .pos-grid-80 {
+  --g: 0.45cqi;
+  gap: var(--g);
+  padding: 0;
+}
+.live-pip .pos-grid-80 .tv-ball {
+  --ball-size: min(
+    100%,
+    calc((100cqi - 9 * var(--g)) / 10),
+    calc((100cqb - 7 * var(--g)) / 8),
+    var(--pip-dot)
+  );
+  width: min(var(--ball-size), 100%);
+  height: min(var(--ball-size), 100%);
+  max-width: 100%;
+  max-height: 100%;
+  font-size: 0;
+  box-shadow: none;
+  border-width: 1px;
+}
+
+.live-pip .pos-balls-20 {
+  --g: 0.5cqi;
+  gap: var(--g);
+}
+.live-pip .pos-balls-20 .tv-ball {
+  --ball-size: min(4.2cqi, 8.5cqb, 12px);
+  max-width: 100%;
+}
+
+.live-pip .tv-ball.is-drop { animation-name: pos-ball-drop-pip; }
+@keyframes pos-ball-drop-pip {
+  0% { transform: translateY(-6px) scale(0.4); opacity: 0; }
+  62% { transform: translateY(1px) scale(1.05); opacity: 1; }
+  100% { transform: translateY(0) scale(1); }
+}
+
+/* Result */
+.live-pip .pos-result-head { gap: 4px; margin-bottom: 2px; }
+.live-pip .pos-result-title {
+  font-size: var(--pip-type);
+  padding: 1px 6px;
+  border-radius: 5px;
+  box-shadow: 0 1px 0 #a67c00;
+}
+.live-pip .pos-badge {
+  padding: 0 4px;
+  font-size: var(--pip-type-sm);
+  border-radius: 3px;
+  box-shadow: none;
+}
+.live-pip .pos-result-stats p,
+.live-pip #pos-result-lines {
+  display: none;
+}
+.live-pip .pos-result-stats #pos-result-badges { gap: 3px; }
+
+/* Last 3 draws */
+.live-pip .pos-draw-head {
+  gap: 3px;
+  margin-bottom: 1px;
+  font-size: var(--pip-type-sm);
+  flex-wrap: nowrap;
+}
+.live-pip .pos-draw-block { margin-bottom: 1.2cqb; }
+.live-pip .pos-recent-col { padding-top: 0; }
+
+/* Charts — thin cards, tags tucked in */
+.live-pip .pos-chart-stack { gap: 1.2cqb; }
+.live-pip .pos-chart-card {
+  padding: 10px 2px 2px 2px;
+  border-radius: 6px;
+  border-width: 1px;
+}
+.live-pip .pos-chart-tag {
+  top: 2px;
+  left: 4px;
+  font-size: 6px;
+  padding: 0 4px;
+  border-radius: 3px;
+}
+
+/* Stats — hide captions that blow the 9:16-tall rows */
+.live-pip .pos-stats-head { margin-bottom: 0; gap: 4px; }
+.live-pip .pos-stats-next .pos-label-white { font-size: var(--pip-type-sm); }
+.live-pip .pos-stats-next .pos-countdown { font-size: min(4.6cqi, 10cqb, 14px); }
+.live-pip .pos-stat-row {
+  grid-template-columns: minmax(0, 0.24fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1px 4px;
+  padding: 0.6cqb 0;
+  border-bottom-width: 1px;
+}
+.live-pip .pos-stat-row.is-single { grid-template-columns: minmax(0, 0.24fr) minmax(0, 1fr); }
+.live-pip .pos-stat-title { font-size: var(--pip-type-sm); }
+.live-pip .pos-stat-sub,
+.live-pip .tv-ball-meta small {
+  display: none;
+}
+.live-pip .tv-ball-meta { gap: 0; }
+.live-pip .pos-stat-balls { gap: 0.6cqi; }
+.live-pip .pos-stat-balls .tv-ball {
+  --ball-size: min(3.6cqi, 8cqb, 12px);
+}
+
+.live-pip .pos-screen.has-footer.is-on,
+.live-pip .pos-screen[data-screen="stats"].is-on {
+  overflow: hidden;
+  gap: 0.4cqb;
 }
